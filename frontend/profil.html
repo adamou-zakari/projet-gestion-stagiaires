@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil — ANSI Niger</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .profil-page {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .top-bar-profil {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 14px; }
+        .logo-area img { height: 52px; width: auto; object-fit: contain; border-radius: 8px; }
+        .logo-area h1 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .profil-id-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .profil-avatar {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent-1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+            box-shadow: 0 0 20px rgba(124,58,237,0.3);
+        }
+
+        .profil-id-info h2 { margin: 0 0 4px; font-size: 18px; color: var(--text-primary); }
+        .profil-id-info p  { margin: 0 0 8px; font-size: 13px; color: var(--text-secondary); }
+
+        .role-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .role-tag-admin { background: linear-gradient(135deg,#6c63ff,#a855f7); color: #fff; }
+        .role-tag-agent { background: linear-gradient(135deg,#06b6d4,#0891b2); color: #fff; }
+
+        .profil-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 14px;
+        }
+
+        .profil-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .profil-section-title i { color: var(--accent-1); }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-group label i {
+            color: var(--accent-1);
+            font-size: 12px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'Outfit', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-group input::placeholder { color: var(--text-muted); }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-1);
+            box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+            background: rgba(0,212,255,0.03);
+        }
+
+        .info-note {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .pwd-bar-wrap {
+            height: 4px;
+            background: rgba(255,255,255,0.07);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .pwd-bar {
+            height: 100%;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s, background 0.3s;
+        }
+
+        .pwd-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 5px;
+            transition: color 0.3s;
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-1), #0891b2);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 18px;
+            box-shadow: 0 4px 12px rgba(0,212,255,0.2);
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover { opacity: 0.88; transform: translateY(-1px); }
+
+        .footer-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .btn-back {
+            background: rgba(148, 163, 184, 0.2);
+            color: #cbd5e1;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            padding: 12px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-back:hover {
+            background: rgba(148, 163, 184, 0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .alert-box {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-top: 14px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-box.success {
+            background: rgba(16,185,129,0.12);
+            border: 1px solid rgba(16,185,129,0.25);
+            color: #10b981;
+        }
+
+        .alert-box.error {
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.25);
+            color: #ef4444;
+        }
+
+        @media (max-width: 500px) {
+            .form-row-2 { grid-template-columns: 1fr; }
+            .top-bar-profil { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+
+        <div class="top-bar-profil">
+            <div class="logo-area">
+                <img src="logo.png" alt="ANSI Niger" onerror="this.style.display='none'">
+                <h1>Mon Profil</h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <button class="logout-btn" onclick="logout()"
+                    style="width:auto;padding:8px 16px;font-size:13px;">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+        </div>
+
+        <div class="profil-page">
+
+            <div class="profil-id-card">
+                <div class="profil-avatar" id="profilAvatar">?</div>
+                <div class="profil-id-info">
+                    <h2 id="profilNomComplet">—</h2>
+                    <p id="profilLogin">—</p>
+                    <span class="role-tag" id="profilRoleTag"></span>
+                </div>
+            </div>
+
+            <!-- SECTION 1 : Infos personnelles -->
+            <div class="profil-section">
+                <div class="profil-section-title">
+                    <i class="fas fa-user-edit"></i> Informations personnelles
+                </div>
+
+                <form id="formInfos" onsubmit="sauvegarderInfos(event)">
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Nom</label>
+                            <input type="text" id="nom" placeholder="Votre nom" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Prénom</label>
+                            <input type="text" id="prenom" placeholder="Votre prénom" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-signature"></i> Login (identifiant)</label>
+                        <input type="text" id="login" placeholder="Votre identifiant" required>
+                        <div class="info-note">Utilisé pour vous connecter</div>
+                    </div>
+                    <div class="form-group" id="emailGroup">
+                        <label><i class="fas fa-envelope"></i> Email (optionnel)</label>
+                        <input type="email" id="email" placeholder="votre@email.com">
+                    </div>
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-save"></i> Sauvegarder les informations
+                    </button>
+                    <div class="alert-box" id="alertInfos"></div>
+                </form>
+            </div>
+
+            <!-- SECTION 2 : Changer mot de passe -->
+            <div class="profil-section">
+                <div class="profil-section-title">
+                    <i class="fas fa-lock"></i> Changer le mot de passe
+                </div>
+
+                <form id="formPassword" onsubmit="changerMotDePasse(event)">
+
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Mot de passe actuel</label>
+                        <input type="password" id="mdpActuel" placeholder="Entrez votre mot de passe actuel" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-key"></i> Nouveau mot de passe</label>
+                        <input type="password" id="mdpNouveau" placeholder="Minimum 6 caractères" oninput="checkForce(this.value)" required>
+                        <div class="pwd-bar-wrap">
+                            <div class="pwd-bar" id="pwdBar"></div>
+                        </div>
+                        <div class="pwd-hint" id="pwdHint">Entrez un nouveau mot de passe</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-key"></i> Confirmer</label>
+                        <input type="password" id="mdpConfirm" placeholder="Confirmez le nouveau mot de passe" required>
+                    </div>
+
+                    <button type="submit" class="btn-save"
+                        style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);
+                               box-shadow:0 4px 12px rgba(139,92,246,0.2);">
+                        <i class="fas fa-lock"></i> Changer le mot de passe
+                    </button>
+                    <div class="alert-box" id="alertPassword"></div>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- BOUTON RETOUR CENTRÉ EN BAS -->
+        <div class="footer-buttons">
+            <button class="btn-back" onclick="window.location.href='dashboard.html'">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+
+        function checkForce(pwd) {
+            const bar  = document.getElementById('pwdBar');
+            const hint = document.getElementById('pwdHint');
+            if (!pwd) {
+                bar.style.width  = '0%';
+                hint.textContent = 'Entrez un nouveau mot de passe';
+                hint.style.color = '';
+                return;
+            }
+            let score = 0;
+            if (pwd.length >= 6)              score++;
+            if (pwd.length >= 10)             score++;
+            if (/[A-Z]/.test(pwd))            score++;
+            if (/[0-9]/.test(pwd))            score++;
+            if (/[^A-Za-z0-9]/.test(pwd))     score++;
+
+            const levels = [
+                { w:'20%',  c:'#ef4444', t:'Très faible' },
+                { w:'40%',  c:'#f97316', t:'Faible' },
+                { w:'60%',  c:'#eab308', t:'Moyen' },
+                { w:'80%',  c:'#06b6d4', t:'Fort' },
+                { w:'100%', c:'#10b981', t:'Très fort' }
+            ];
+            const l = levels[Math.min(score - 1, 4)];
+            bar.style.width      = l.w;
+            bar.style.background = l.c;
+            hint.textContent     = l.t;
+            hint.style.color     = l.c;
+        }
+
+        function showAlert(id, type, msg) {
+            const el = document.getElementById(id);
+            el.className = `alert-box ${type}`;
+            el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${msg}`;
+            el.style.display = 'flex';
+            setTimeout(() => { el.style.display = 'none'; }, 4000);
+        }
+
+        async function loadProfil() {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const res = await apiRequest('http://localhost:3000/api/auth/me');
+                if (!res.ok) throw new Error();
+                const user = await res.json();
+
+                document.getElementById('profilNomComplet').textContent =
+                    `${user.prenom || ''} ${user.nom || ''}`.trim();
+                document.getElementById('profilLogin').textContent = user.login || '—';
+
+                const initials = `${(user.prenom || '?')[0]}${(user.nom || '?')[0]}`.toUpperCase();
+                document.getElementById('profilAvatar').textContent = initials;
+
+                const tag = document.getElementById('profilRoleTag');
+                if (user.role === 'admin') {
+                    tag.textContent = '👑 Administrateur';
+                    tag.className   = 'role-tag role-tag-admin';
+                    document.getElementById('emailGroup').style.display = 'block';
+                } else {
+                    tag.textContent = '🛡️ Agent de sécurité';
+                    tag.className   = 'role-tag role-tag-agent';
+                    document.getElementById('emailGroup').style.display = 'none';
+                }
+
+                document.getElementById('nom').value    = user.nom    || '';
+                document.getElementById('prenom').value = user.prenom || '';
+                document.getElementById('login').value  = user.login  || '';
+                document.getElementById('email').value  = user.email  || '';
+
+            } catch (e) {
+                console.error('Erreur chargement profil:', e);
+            }
+        }
+
+        async function sauvegarderInfos(e) {
+            e.preventDefault();
+
+            const data = {
+                nom:    document.getElementById('nom').value.trim(),
+                prenom: document.getElementById('prenom').value.trim(),
+                login:  document.getElementById('login').value.trim()
+            };
+
+            const email = document.getElementById('email').value.trim();
+            if (email) {
+                data.email = email;
+            }
+
+            try {
+                const res = await apiRequest('http://localhost:3000/api/auth/me', {
+                    method: 'PUT',
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    const user = getUser();
+                    if (user) {
+                        user.nom = data.nom;
+                        user.prenom = data.prenom;
+                        user.login = data.login;
+                        if (email) user.email = email;
+                        localStorage.setItem('user', JSON.stringify(user));
+                    }
+                    
+                    document.getElementById('profilNomComplet').textContent = `${data.prenom} ${data.nom}`;
+                    document.getElementById('profilLogin').textContent = data.login;
+                    document.getElementById('profilAvatar').textContent = `${data.prenom[0]}${data.nom[0]}`.toUpperCase();
+
+                    showAlert('alertInfos', 'success', 'Informations mises à jour avec succès');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    const err = await res.json();
+                    showAlert('alertInfos', 'error', err.message || 'Erreur lors de la mise à jour');
+                }
+            } catch {
+                showAlert('alertInfos', 'error', 'Erreur de connexion');
+            }
+        }
+
+        async function changerMotDePasse(e) {
+            e.preventDefault();
+            const actuel   = document.getElementById('mdpActuel').value;
+            const nouveau  = document.getElementById('mdpNouveau').value;
+            const confirme = document.getElementById('mdpConfirm').value;
+
+            if (nouveau !== confirme) {
+                showAlert('alertPassword', 'error', 'Les deux mots de passe ne correspondent pas');
+                return;
+            }
+            if (nouveau.length < 6) {
+                showAlert('alertPassword', 'error', 'Minimum 6 caractères requis');
+                return;
+            }
+
+            try {
+                const res = await apiRequest('http://localhost:3000/api/auth/me/password', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        mot_de_passe_actuel:  actuel,
+                        nouveau_mot_de_passe: nouveau
+                    })
+                });
+
+                if (res.ok) {
+                    document.getElementById('formPassword').reset();
+                    document.getElementById('pwdBar').style.width = '0%';
+                    document.getElementById('pwdHint').textContent = 'Entrez un nouveau mot de passe';
+                    document.getElementById('pwdHint').style.color = '';
+                    showAlert('alertPassword', 'success', 'Mot de passe changé avec succès');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    const err = await res.json();
+                    showAlert('alertPassword', 'error', err.message || 'Erreur lors du changement');
+                }
+            } catch {
+                showAlert('alertPassword', 'error', 'Erreur de connexion');
+            }
+        }
+
+        loadProfil();
+    </script>
+</body>
+</html>

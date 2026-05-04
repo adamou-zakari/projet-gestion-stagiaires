@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil Agent — Pointage Stagiaires</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .agent-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .top-bar-agent {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .logo-area img {
+            height: 52px;
+            width: auto;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        .logo-area h1 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .logo-icon { color: #06b6d4; }
+        .agent-info { display: flex; align-items: center; gap: 12px; }
+        .top-bar-center { text-align: center; }
+        .agent-badge {
+            background: linear-gradient(135deg,#06b6d4,#0891b2);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .clock-date { font-size: 12px; color: var(--text-muted); }
+        .clock-time {
+            font-size: 22px;
+            font-weight: 700;
+            color: #06b6d4;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-box .stat-num {
+            font-size: 36px;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-primary);
+        }
+        .stat-box .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+        .stat-box:nth-child(1) { border-top: 3px solid var(--accent-1); }
+        .stat-box:nth-child(2) { border-top: 3px solid var(--accent-3); }
+
+        .search-agent { position: relative; margin-bottom: 16px; }
+        .search-agent i.ico {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #06b6d4;
+            font-size: 15px;
+            pointer-events: none;
+        }
+        .search-agent input {
+            width: 100%;
+            padding: 13px 20px 13px 48px;
+            background: var(--bg-card);
+            border: 1.5px solid rgba(6,182,212,0.2);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+        .search-agent input:focus {
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 3px rgba(6,182,212,0.1);
+        }
+        .search-agent input::placeholder { color: var(--text-muted); }
+
+        .agent-table-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .agent-table { width: 100%; border-collapse: collapse; }
+        .agent-table th {
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            background: var(--bg-deep);
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+        .agent-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(31,45,69,0.5);
+            font-size: 14px;
+            color: var(--text-secondary);
+            vertical-align: middle;
+        }
+        .agent-table tr:last-child td { border-bottom: none; }
+        .agent-table tr:hover td { background: rgba(6,182,212,0.03); color: var(--text-primary); }
+
+        .person-cell { display: flex; align-items: center; gap: 12px; }
+        .person-initials {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+            background: linear-gradient(135deg,#3b82f6,#1d4ed8);
+        }
+        .person-cell-info .name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+        .person-cell-info .sub  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+        .statut-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .statut-present {
+            background: rgba(16,185,129,0.15);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.25);
+        }
+        .statut-absent {
+            background: rgba(107,114,128,0.1);
+            color: #6b7280;
+            border: 1px solid rgba(107,114,128,0.2);
+        }
+        .statut-absent i { font-size: 8px; }
+
+        .dot-live {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse-g 1.8s infinite;
+        }
+        @keyframes pulse-g {
+            0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+            50%      { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+        }
+
+        .btn-entree, .btn-sortie {
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.18s;
+        }
+        .btn-entree {
+            background: rgba(16,185,129,0.15);
+            color: #10b981;
+            border: 1.5px solid rgba(16,185,129,0.3);
+        }
+        .btn-entree:hover {
+            background: rgba(16,185,129,0.28);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16,185,129,0.2);
+        }
+        .btn-sortie {
+            background: rgba(239,68,68,0.12);
+            color: #f87171;
+            border: 1.5px solid rgba(239,68,68,0.25);
+        }
+        .btn-sortie:hover {
+            background: rgba(239,68,68,0.22);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239,68,68,0.18);
+        }
+
+        .heure-entree { font-size: 11px; color: #10b981; margin-top: 3px; }
+        .logout-btn   { width: auto; padding: 8px 16px; font-size: 13px; }
+
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            max-width: 320px;
+        }
+        .toast.success { background: #10b981; }
+        .toast.error   { background: #ef4444; }
+        @keyframes slideIn {
+            from { transform: translateX(110%); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+        .empty-row td { text-align: center; padding: 40px !important; color: var(--text-muted); }
+
+        .footer-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        .btn-back {
+            background: rgba(148,163,184,0.2);
+            color: #cbd5e1;
+            border: 1px solid rgba(148,163,184,0.3);
+            padding: 12px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .btn-back:hover { background: rgba(148,163,184,0.3); transform: translateY(-2px); color: white; }
+
+        @media (max-width: 768px) { .top-bar-agent { flex-direction: column; gap: 10px; } }
+    </style>
+</head>
+<body>
+    <div class="agent-container">
+
+        <!-- TOP BAR -->
+        <div class="top-bar-agent">
+            <div class="logo-area">
+                <img src="logo.png" alt="ANSI Niger" onerror="this.style.display='none'">
+                <h1><i class="fas fa-clipboard-list logo-icon"></i> Pointage des stagiaires</h1>
+            </div>
+            <div class="top-bar-center">
+                <div id="clockDate" class="clock-date"></div>
+                <div id="clockTime" class="clock-time"></div>
+            </div>
+            <div class="agent-info">
+                <span class="agent-badge">
+                    <i class="fas fa-user-shield"></i>
+                    <span id="agentName">Agent</span>
+                </span>
+                <button type="button" class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Quitter
+                </button>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-num" id="statTotal">0</div>
+                <div class="stat-label">Stagiaires actifs</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-num" id="statPresent">0</div>
+                <div class="stat-label">Présents aujourd'hui</div>
+            </div>
+        </div>
+
+        <!-- RECHERCHE -->
+        <div class="search-agent">
+            <i class="fas fa-search ico"></i>
+            <input type="text" id="searchInput"
+                placeholder="Rechercher par nom, prénom..."
+                oninput="renderTable()">
+        </div>
+
+        <!-- TABLEAU -->
+        <div class="agent-table-wrap">
+            <table class="agent-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user"></i> Stagiaire</th>
+                        <th><i class="fas fa-phone"></i> Contact</th>
+                        <th><i class="fas fa-circle"></i> Statut</th>
+                        <th><i class="fas fa-bolt"></i> Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr class="empty-row">
+                        <td colspan="4"><i class="fas fa-spinner fa-spin"></i> Chargement...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- BOUTON RETOUR -->
+        <div class="footer-buttons">
+            <button class="btn-back" onclick="window.location.href='dashboard.html'">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let stagiairesList = [];
+
+        /* ── Horloge ─────────────────────────────────────── */
+        function updateClock() {
+            const now  = new Date();
+            const jours = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+            const mois  = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+            document.getElementById('clockDate').textContent =
+                `${jours[now.getDay()]} ${now.getDate()} ${mois[now.getMonth()]}`;
+            document.getElementById('clockTime').textContent = now.toLocaleTimeString('fr-FR');
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        /* ── Chargement stagiaires ───────────────────────── */
+        async function loadStagiaires() {
+            try {
+                const res = await apiRequest('http://localhost:3000/api/stagiaires');
+                if (!res.ok) throw new Error('Réponse non OK');
+                let stagiaires = await res.json();
+
+                // ✅ FILTRE : n'afficher que les stagiaires dont date_fin >= aujourd'hui
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                stagiaires = stagiaires.filter(s => {
+                    if (!s.date_fin) return true;           // pas de date fin = toujours actif
+                    const dateFin = new Date(s.date_fin);
+                    dateFin.setHours(0, 0, 0, 0);
+                    return dateFin >= today;                 // garder seulement si non expiré
+                });
+
+                stagiairesList = stagiaires;
+                renderTable();
+            } catch {
+                stagiairesList = [];
+                showToast('❌ Impossible de charger les stagiaires', 'error');
+                renderTable();
+            }
+        }
+
+        /* ── Utilitaire présence ─────────────────────────── */
+        function isPresent(stagiaire) {
+            return stagiaire.est_present === true || stagiaire.est_present === 1;
+        }
+
+        /* ── Rendu tableau ───────────────────────────────── */
+        function renderTable() {
+            const tbody  = document.getElementById('tableBody');
+            const search = document.getElementById('searchInput').value.trim().toLowerCase();
+
+            const filtered = stagiairesList.filter(s =>
+                (s.nom    || '').toLowerCase().includes(search) ||
+                (s.prenom || '').toLowerCase().includes(search)
+            );
+
+            document.getElementById('statTotal').textContent   = filtered.length;
+            document.getElementById('statPresent').textContent = filtered.filter(s => isPresent(s)).length;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="4">
+                    <i class="fas fa-user-graduate"></i> Aucun stagiaire actif</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            filtered.forEach(s => {
+                const present  = isPresent(s);
+                const name     = `${s.prenom || ''} ${s.nom || ''}`.trim() || '—';
+                const initials = `${(s.prenom || '?')[0]}${(s.nom || '?')[0]}`.toUpperCase();
+                const contact  = s.telephone || s.email || '—';
+
+                const tr = document.createElement('tr');
+
+                // Colonne Nom
+                const tdNom = document.createElement('td');
+                tdNom.innerHTML = `
+                    <div class="person-cell">
+                        <div class="person-initials">${initials}</div>
+                        <div class="person-cell-info">
+                            <div class="name">${name}</div>
+                            <div class="sub">${s.email || ''}</div>
+                        </div>
+                    </div>`;
+
+                // Colonne Contact
+                const tdContact = document.createElement('td');
+                tdContact.textContent = contact;
+
+                // Colonne Statut
+                const tdStatut = document.createElement('td');
+                if (present) {
+                    const heureEntree = s.derniere_entree
+                        ? new Date(s.derniere_entree).toLocaleTimeString('fr-FR') : null;
+                    tdStatut.innerHTML = `
+                        <span class="statut-badge statut-present">
+                            <span class="dot-live"></span> Présent
+                        </span>
+                        ${heureEntree ? `<div class="heure-entree"><i class="fas fa-clock"></i> ${heureEntree}</div>` : ''}`;
+                } else {
+                    tdStatut.innerHTML = `<span class="statut-badge statut-absent">
+                        <i class="fas fa-circle"></i> Absent</span>`;
+                }
+
+                // Colonne Action
+                const tdAction = document.createElement('td');
+                if (present) {
+                    const btnSortie = document.createElement('button');
+                    btnSortie.className = 'btn-sortie';
+                    btnSortie.innerHTML = '<i class="fas fa-sign-out-alt"></i> SORTIE';
+                    btnSortie.addEventListener('click', () => enregistrerSortie(s.id, name));
+                    tdAction.appendChild(btnSortie);
+                } else {
+                    const btnEntree = document.createElement('button');
+                    btnEntree.className = 'btn-entree';
+                    btnEntree.innerHTML = '<i class="fas fa-sign-in-alt"></i> ENTRÉE';
+                    btnEntree.addEventListener('click', () => enregistrerEntree(s.id, name));
+                    tdAction.appendChild(btnEntree);
+                }
+
+                tr.appendChild(tdNom);
+                tr.appendChild(tdContact);
+                tr.appendChild(tdStatut);
+                tr.appendChild(tdAction);
+                tbody.appendChild(tr);
+            });
+        }
+
+        /* ── Pointage ────────────────────────────────────── */
+        async function enregistrerEntree(personId, name) {
+            try {
+                const res = await apiRequest(
+                    `http://localhost:3000/api/stagiaires/${personId}/entree`, { method: 'POST' });
+                if (res.ok) {
+                    showToast(`✅ ${name} — Entrée enregistrée`);
+                    await loadStagiaires();
+                } else {
+                    const err = await res.json();
+                    showToast(`❌ ${err.message || 'Erreur entrée'}`, 'error');
+                }
+            } catch { showToast('❌ Erreur de connexion', 'error'); }
+        }
+
+        async function enregistrerSortie(personId, name) {
+            try {
+                const res = await apiRequest(
+                    `http://localhost:3000/api/stagiaires/${personId}/sortie`, { method: 'POST' });
+                if (res.ok) {
+                    showToast(`✅ ${name} — Sortie enregistrée`);
+                    await loadStagiaires();
+                } else {
+                    const err = await res.json();
+                    showToast(`❌ ${err.message || 'Erreur sortie'}`, 'error');
+                }
+            } catch { showToast('❌ Erreur de connexion', 'error'); }
+        }
+
+        /* ── Toast ───────────────────────────────────────── */
+        function showToast(message, type = 'success') {
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.textContent = message;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        /* ── Init ────────────────────────────────────────── */
+        async function init() {
+            const token = checkAuth();
+            if (!token) return;
+            const user = getUser();
+            if (user) {
+                document.getElementById('agentName').textContent =
+                    `${user.prenom || ''} ${user.nom || ''}`.trim() || user.email || 'Agent';
+            }
+            await loadStagiaires();
+        }
+
+        init();
+    </script>
+</body>
+</html>

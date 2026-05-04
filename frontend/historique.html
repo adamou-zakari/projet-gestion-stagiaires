@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique — ANSI Niger</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SheetJS pour export Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        .filters-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .filter-group label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .filter-group input,
+        .filter-group select {
+            background: var(--bg-deep);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 9px 12px;
+            font-size: 13px;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            border-color: var(--accent-1);
+        }
+
+        .filter-group select option { background: var(--bg-card); }
+
+        .filter-search {
+            flex: 2;
+            min-width: 200px;
+        }
+
+        .btn-filter {
+            background: linear-gradient(135deg, var(--accent-1), #0891b2);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            padding: 9px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            width: auto;
+            transition: all 0.2s;
+            align-self: flex-end;
+        }
+
+        .btn-filter:hover { opacity: 0.88; transform: translateY(-1px); }
+
+        .btn-reset {
+            background: rgba(148,163,184,0.1);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            width: auto;
+            transition: all 0.2s;
+            align-self: flex-end;
+        }
+
+        .btn-reset:hover { background: rgba(148,163,184,0.18); color: var(--text-primary); }
+
+        /* Boutons export Excel */
+        .btn-export {
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #10b981;
+            padding: 9px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            width: auto;
+            transition: all 0.2s;
+        }
+        .btn-export:hover {
+            background: rgba(16,185,129,0.25);
+            transform: translateY(-1px);
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            padding: 7px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.18s;
+            width: auto;
+        }
+
+        .page-btn:hover { border-color: var(--accent-1); color: var(--accent-1); }
+        .page-btn.active { background: var(--accent-1); color: #fff; border-color: var(--accent-1); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .page-info { font-size: 13px; color: var(--text-muted); }
+
+        .action-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .action-connexion   { background: rgba(0,212,255,0.12);   color: var(--accent-1); }
+        .action-ajout       { background: rgba(16,185,129,0.12);  color: var(--accent-3); }
+        .action-modification{ background: rgba(245,158,11,0.12);  color: var(--accent-warn); }
+        .action-suppression { background: rgba(239,68,68,0.12);   color: var(--accent-danger); }
+        .action-autre       { background: rgba(148,163,184,0.1);  color: var(--text-muted); }
+
+        .badge-present {
+            background: rgba(16,185,129,0.2);
+            color: #10b981;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hist-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 6px;
+            width: fit-content;
+        }
+
+        .hist-tab {
+            padding: 9px 22px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: auto;
+            transition: all 0.2s;
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .hist-tab.active {
+            background: linear-gradient(135deg, var(--accent-1), #0891b2);
+            color: #fff;
+            box-shadow: 0 3px 10px rgba(0,212,255,0.25);
+        }
+
+        .hist-tab:hover:not(.active) { color: var(--text-primary); }
+
+        .hist-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .hist-stat {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .hist-stat .n {
+            font-size: 30px;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-primary);
+        }
+
+        .hist-stat .l {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .top-bar-hist {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 14px; }
+        .logo-area img { height: 52px; width: auto; object-fit: contain; border-radius: 8px; }
+        .logo-area h1 { font-size: 17px; font-weight: 700; color: var(--text-primary); font-family: 'Space Grotesk', sans-serif; }
+
+        .footer-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .btn-back {
+            background: rgba(148, 163, 184, 0.2);
+            color: #cbd5e1;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            padding: 12px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-back:hover {
+            background: rgba(148, 163, 184, 0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .filters-bar { flex-direction: column; }
+            .top-bar-hist { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+
+        <!-- TOP BAR -->
+        <div class="top-bar-hist">
+            <div class="logo-area">
+                <img src="logo.png" alt="ANSI Niger" onerror="this.style.display='none'">
+                <h1><i class="fas fa-history" style="color:var(--accent-1);"></i> Historique</h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span class="role-badge" id="roleBadge"></span>
+                <button class="logout-btn" onclick="logout()"
+                    style="width:auto;padding:8px 16px;font-size:13px;">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="hist-stats">
+            <div class="hist-stat">
+                <div class="n" id="statTotalVisites">—</div>
+                <div class="l">Total visites</div>
+            </div>
+            <div class="hist-stat">
+                <div class="n" id="statVisitesAujourdhui">—</div>
+                <div class="l">Visites aujourd'hui</div>
+            </div>
+            <div class="hist-stat">
+                <div class="n" id="statTotalPointages">—</div>
+                <div class="l">Total pointages stagiaires</div>
+            </div>
+            <div class="hist-stat">
+                <div class="n" id="statPointagesAujourdhui">—</div>
+                <div class="l">Pointages aujourd'hui</div>
+            </div>
+            <div class="hist-stat">
+                <div class="n" id="statTotalLogs">—</div>
+                <div class="l">Total activités</div>
+            </div>
+            <div class="hist-stat">
+                <div class="n" id="statLogsAujourdhui">—</div>
+                <div class="l">Activités aujourd'hui</div>
+            </div>
+        </div>
+
+        <!-- ONGLETS -->
+        <div class="hist-tabs">
+            <button class="hist-tab active" id="tabVisiteurs" onclick="switchTab('visiteurs')">
+                <i class="fas fa-door-open"></i> Visiteurs
+            </button>
+            <button class="hist-tab" id="tabStagiaires" onclick="switchTab('stagiaires')">
+                <i class="fas fa-user-graduate"></i> Pointages stagiaires
+            </button>
+            <button class="hist-tab" id="tabLogs" onclick="switchTab('logs')">
+                <i class="fas fa-clipboard-list"></i> Activités
+            </button>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- SECTION VISITEURS                                   -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <div id="sectionVisiteurs">
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Du</label>
+                    <input type="date" id="vDateDebut">
+                </div>
+                <div class="filter-group">
+                    <label>Au</label>
+                    <input type="date" id="vDateFin">
+                </div>
+                <div class="filter-group filter-search">
+                    <label>Recherche</label>
+                    <input type="text" id="vSearch" placeholder="Nom, prénom, direction...">
+                </div>
+                <button class="btn-filter" onclick="loadVisiteurs(1)">Filtrer</button>
+                <button class="btn-reset" onclick="resetFiltresVisiteurs()">Reset</button>
+                <button class="btn-export" onclick="exportVisiteursToExcel()">
+                    <i class="fas fa-file-excel"></i> Exporter Excel
+                </button>
+            </div>
+            <div class="table-container">
+                <div class="table-header-row">
+                    <h3>Historique des visiteurs</h3>
+                    <span class="table-info-badge" id="vCount"></span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Visiteur</th>
+                            <th>Structure</th>
+                            <th>Direction visitée</th>
+                            <th>Personne visitée</th>
+                            <th>Date</th>
+                            <th>Entrée</th>
+                            <th>Sortie</th>
+                            <th>Durée</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyVisiteurs"></tbody>
+                </table>
+            </div>
+            <div class="pagination" id="paginationVisiteurs"></div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- SECTION STAGIAIRES (POINTAGES)                      -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <div id="sectionStagiaires" style="display:none;">
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Du</label>
+                    <input type="date" id="sDateDebut">
+                </div>
+                <div class="filter-group">
+                    <label>Au</label>
+                    <input type="date" id="sDateFin">
+                </div>
+                <div class="filter-group filter-search">
+                    <label>Recherche</label>
+                    <input type="text" id="sSearch" placeholder="Nom, prénom...">
+                </div>
+                <button class="btn-filter" onclick="loadStagiaires(1)">Filtrer</button>
+                <button class="btn-reset" onclick="resetFiltresStagiaires()">Reset</button>
+                <button class="btn-export" onclick="exportStagiairesToExcel()">
+                    <i class="fas fa-file-excel"></i> Exporter Excel
+                </button>
+            </div>
+            <div class="table-container">
+                <div class="table-header-row">
+                    <h3>Historique des pointages stagiaires</h3>
+                    <span class="table-info-badge" id="sCount"></span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Stagiaire</th>
+                            <th>Date</th>
+                            <th>Heure entrée</th>
+                            <th>Heure sortie</th>
+                            <th>Enregistré par</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyStagiaires"></tbody>
+                </table>
+            </div>
+            <div class="pagination" id="paginationStagiaires"></div>
+        </div>
+
+        <!-- SECTION LOGS -->
+        <div id="sectionLogs" style="display:none;">
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Du</label>
+                    <input type="date" id="lDateDebut">
+                </div>
+                <div class="filter-group">
+                    <label>Au</label>
+                    <input type="date" id="lDateFin">
+                </div>
+                <div class="filter-group">
+                    <label>Action</label>
+                    <select id="lAction"><option value="tous">Toutes les actions</option></select>
+                </div>
+                <div class="filter-group filter-search">
+                    <label>Recherche</label>
+                    <input type="text" id="lSearch" placeholder="Détails, utilisateur...">
+                </div>
+                <button class="btn-filter" onclick="loadLogs(1)">Filtrer</button>
+                <button class="btn-reset" onclick="resetFiltresLogs()">Reset</button>
+            </div>
+            <div class="table-container">
+                <div class="table-header-row">
+                    <h3>Registre des activités</h3>
+                    <span class="table-info-badge" id="lCount"></span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date & Heure</th>
+                            <th>Action</th>
+                            <th>Utilisateur</th>
+                            <th>Détails</th>
+                            <th>IP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyLogs"></tbody>
+                </table>
+            </div>
+            <div class="pagination" id="paginationLogs"></div>
+        </div>
+
+        <div class="footer-buttons">
+            <button class="btn-back" onclick="window.location.href='dashboard.html'">Retour au Dashboard</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let currentTab = 'visiteurs';
+        // Variable globale pour stocker les données visiteurs filtrées (utile pour export)
+        let currentVisiteursData = [];
+        let currentStagiairesData = []; // pour les pointages
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            if (isNaN(d)) return dateStr;
+            return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '-';
+            if (timeStr.includes(':')) return timeStr.substring(0,5);
+            return '-';
+        }
+
+        function calcDuree(entree, sortie) {
+            if (!entree || !sortie) return '—';
+            try {
+                const [h1,m1] = entree.split(':').map(Number);
+                const [h2,m2] = sortie.split(':').map(Number);
+                const diff = (h2*60+m2) - (h1*60+m1);
+                if (diff < 0) return '—';
+                const h = Math.floor(diff/60), m = diff%60;
+                return h>0 ? `${h}h${String(m).padStart(2,'0')}` : `${m}min`;
+            } catch { return '—'; }
+        }
+
+        function actionClass(action) {
+            if (!action) return 'action-autre';
+            const a = action.toUpperCase();
+            if (a.includes('CONNEXION')) return 'action-connexion';
+            if (a.includes('AJOUT')||a.includes('CREATION')||a.includes('ENTREE')) return 'action-ajout';
+            if (a.includes('MODIFICATION')||a.includes('SORTIE')||a.includes('PROFIL')||a.includes('MOT_DE_PASSE')) return 'action-modification';
+            if (a.includes('SUPPRESSION')) return 'action-suppression';
+            return 'action-autre';
+        }
+
+        function renderPagination(containerId, currentPage, totalPages, loadFn) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            if (totalPages <= 1) return;
+            const prev = document.createElement('button');
+            prev.className = 'page-btn';
+            prev.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prev.disabled = currentPage === 1;
+            prev.onclick = () => loadFn(currentPage - 1);
+            container.appendChild(prev);
+            const info = document.createElement('span');
+            info.className = 'page-info';
+            info.textContent = `Page ${currentPage} / ${totalPages}`;
+            container.appendChild(info);
+            const next = document.createElement('button');
+            next.className = 'page-btn';
+            next.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            next.disabled = currentPage === totalPages;
+            next.onclick = () => loadFn(currentPage + 1);
+            container.appendChild(next);
+        }
+
+        async function loadStats() {
+            try {
+                const res = await apiRequest('http://localhost:3000/api/historique/stats');
+                const data = await res.json();
+                document.getElementById('statTotalVisites').textContent = data.totalVisites || 0;
+                document.getElementById('statVisitesAujourdhui').textContent = data.visitesAujourdhui || 0;
+                document.getElementById('statTotalPointages').textContent = data.totalPointages || 0;
+                document.getElementById('statPointagesAujourdhui').textContent = data.pointagesAujourdhui || 0;
+                document.getElementById('statTotalLogs').textContent = data.totalLogs || 0;
+                document.getElementById('statLogsAujourdhui').textContent = data.logsAujourdhui || 0;
+            } catch(e) { console.error(e); }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // VISITEURS — colonne Structure ajoutée ✅
+        // ─────────────────────────────────────────────────────────
+        async function loadVisiteurs(page=1) {
+            try {
+                const params = new URLSearchParams({
+                    date_debut: document.getElementById('vDateDebut').value,
+                    date_fin: document.getElementById('vDateFin').value,
+                    search: document.getElementById('vSearch').value, page, limit:20
+                });
+                const res = await apiRequest(`http://localhost:3000/api/historique/visiteurs?${params}`);
+                const data = await res.json();
+                document.getElementById('vCount').textContent = `${data.total} résultat${data.total>1?'s':''}`;
+                const tbody = document.getElementById('tbodyVisiteurs');
+                tbody.innerHTML = '';
+                if (data.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;opacity:0.5;">Aucune donnée trouvée<\/td><\/tr>';
+                } else {
+                    data.data.forEach(v => {
+                        const visiteur  = `${v.prenom||''} ${v.nom||''}`.trim() || '—';
+                        const employe   = `${v.employe_prenom||''} ${v.employe_nom||''}`.trim() || '—';
+                        const direction = v.direction  || '—';
+                        const structure = v.structure  || '—';
+                        const sortieHtml = v.heure_sortie
+                            ? v.heure_sortie.substring(0,5)
+                            : '<span class="badge-present">● En cours</span>';
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong>${visiteur}</strong><\/td>
+                            <td>${structure}<\/td>
+                            <td>${direction}<\/td>
+                            <td>${employe}<\/td>
+                            <td>${formatDate(v.date_visite)}<\/td>
+                            <td>${v.heure_entree ? v.heure_entree.substring(0,5) : '—'}<\/td>
+                            <td>${sortieHtml}<\/td>
+                            <td>${calcDuree(v.heure_entree, v.heure_sortie)}<\/td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    // Stocker les données pour export Excel
+                    currentVisiteursData = data.data;
+                }
+                renderPagination('paginationVisiteurs', data.page, data.pages, loadVisiteurs);
+            } catch(e) { console.error(e); }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // STAGIAIRES — fix date (multi-champ) ✅
+        // ─────────────────────────────────────────────────────────
+        async function loadStagiaires(page = 1) {
+            try {
+                const params = new URLSearchParams({
+                    date_debut: document.getElementById('sDateDebut').value,
+                    date_fin: document.getElementById('sDateFin').value,
+                    search: document.getElementById('sSearch').value,
+                    page,
+                    limit: 20
+                });
+
+                const res = await apiRequest(`http://localhost:3000/api/historique/stagiaires?${params}`);
+                
+                if (!res.ok) {
+                    const tbody = document.getElementById('tbodyStagiaires');
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:#f87171;">Erreur ${res.status}<\/td><\/tr>`;
+                    return;
+                }
+                
+                const data = await res.json();
+
+                const sCount = document.getElementById('sCount');
+                if (sCount) sCount.textContent = `${data.total} résultat${data.total > 1 ? 's' : ''}`;
+
+                const tbody = document.getElementById('tbodyStagiaires');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                if (!data.data || data.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;opacity:0.5;">Aucun pointage trouvé<\/td><\/tr>';
+                    return;
+                }
+
+                // Fonction pour extraire la date
+                function getDate(p) {
+                    return p.date || p.date_pointage || p.date_entree || p.created_at || null;
+                }
+
+                const grouped = {};
+                data.data.forEach(p => {
+                    const dateVal = getDate(p);
+                    const dateKey = dateVal ? dateVal.toString().split('T')[0] : 'inconnu';
+                    const key = `${p.stagiaire_id}_${dateKey}`;
+
+                    if (!grouped[key]) {
+                        grouped[key] = {
+                            stagiaire_nom: `${p.stagiaire_prenom || ''} ${p.stagiaire_nom || ''}`.trim(),
+                            stagiaire_id: p.stagiaire_id,
+                            date: dateVal,
+                            entree: null,
+                            sortie: null,
+                            agent: null
+                        };
+                    }
+
+                    const agentNom = (p.agent_prenom || p.agent_nom)
+                        ? `${p.agent_prenom || ''} ${p.agent_nom || ''}`.trim()
+                        : (p.agent_login || 'Système');
+
+                    if (p.type === 'entree') {
+                        grouped[key].entree = p.heure;
+                        grouped[key].agent  = agentNom;
+                    }
+                    if (p.type === 'sortie') {
+                        grouped[key].sortie = p.heure;
+                        grouped[key].agent  = agentNom;
+                    }
+                });
+
+                const flatList = Object.values(grouped);
+                currentStagiairesData = flatList; // stocker pour export
+
+                flatList.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${item.stagiaire_nom || 'Inconnu'}</strong><\/td>
+                        <td>${formatDate(item.date)}<\/td>
+                        <td>${item.entree ? item.entree.substring(0,5) : '—'}<\/td>
+                        <td>${item.sortie ? item.sortie.substring(0,5) : '—'}<\/td>
+                        <td>${item.agent || 'Système'}<\/td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                renderPagination('paginationStagiaires', data.page, data.pages, loadStagiaires);
+
+            } catch (e) {
+                console.error('Erreur loadStagiaires:', e);
+                const tbody = document.getElementById('tbodyStagiaires');
+                if (tbody) tbody.innerHTML = `<td><td colspan="5" style="text-align:center;padding:30px;color:#f87171;">Erreur: ${e.message}<\/td><\/tr>`;
+            }
+        }
+
+        async function loadLogs(page = 1) {
+            try {
+                const params = new URLSearchParams({
+                    date_debut: document.getElementById('lDateDebut').value,
+                    date_fin: document.getElementById('lDateFin').value,
+                    action: document.getElementById('lAction').value,
+                    search: document.getElementById('lSearch').value,
+                    page,
+                    limit: 20
+                });
+
+                const res = await apiRequest(`http://localhost:3000/api/historique/logs?${params}`);
+                
+                if (!res.ok) {
+                    const tbody = document.getElementById('tbodyLogs');
+                    if (tbody) tbody.innerHTML = `<td><td colspan="5" style="text-align:center;padding:30px;color:#f87171;">Erreur ${res.status}<\/td><\/tr>`;
+                    return;
+                }
+                
+                const data = await res.json();
+
+                const lCount = document.getElementById('lCount');
+                if (lCount) lCount.textContent = `${data.total} résultat${data.total > 1 ? 's' : ''}`;
+
+                const select = document.getElementById('lAction');
+                if (select && select.options.length <= 1 && data.actions && data.actions.length > 0) {
+                    data.actions.forEach(a => {
+                        const opt = document.createElement('option');
+                        opt.value = a;
+                        opt.textContent = a;
+                        select.appendChild(opt);
+                    });
+                }
+
+                const tbody = document.getElementById('tbodyLogs');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                if (!data.data || data.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;opacity:0.5;">Aucune activité trouvée<\/td><\/tr>';
+                    return;
+                }
+
+                data.data.forEach(l => {
+                    let utilisateur = 'Système';
+                    if (l.utilisateur_nom || l.utilisateur_prenom) {
+                        utilisateur = `${l.utilisateur_prenom || ''} ${l.utilisateur_nom || ''}`.trim();
+                        if (l.utilisateur_role === 'admin') utilisateur += ' (Admin)';
+                        else if (l.utilisateur_role === 'agent') utilisateur += ' (Agent)';
+                    } else if (l.utilisateur_login) {
+                        utilisateur = l.utilisateur_login;
+                    }
+
+                    const dateHeure = new Date(l.date_action).toLocaleString('fr-FR', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="white-space:nowrap;font-size:13px;">${dateHeure}<\/td>
+                        <td><span class="action-tag ${actionClass(l.action)}">${l.action || '—'}</span><\/td>
+                        <td>${utilisateur}<\/td>
+                        <td style="font-size:12px;color:var(--text-secondary);">${l.details || '—'}<\/td>
+                        <td style="font-size:11px;color:var(--text-muted);">${l.ip_adresse || '—'}<\/td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                renderPagination('paginationLogs', data.page, data.pages, loadLogs);
+
+            } catch (e) {
+                console.error('Erreur loadLogs:', e);
+                const tbody = document.getElementById('tbodyLogs');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:#f87171;">Erreur: ${e.message}<\/td><\/tr>`;
+            }
+        }
+
+        // =========================================================
+        // EXPORT EXCEL
+        // =========================================================
+        function exportVisiteursToExcel() {
+            if (!currentVisiteursData || currentVisiteursData.length === 0) {
+                alert('Aucune donnée à exporter');
+                return;
+            }
+            const dataToExport = currentVisiteursData.map(v => ({
+                'Visiteur': `${v.prenom || ''} ${v.nom || ''}`.trim(),
+                'Structure': v.structure || '-',
+                'Direction visitée': v.direction || '-',
+                'Personne visitée': `${v.employe_prenom || ''} ${v.employe_nom || ''}`.trim() || '-',
+                'Date': formatDate(v.date_visite),
+                'Entrée': v.heure_entree ? v.heure_entree.substring(0,5) : '-',
+                'Sortie': v.heure_sortie ? v.heure_sortie.substring(0,5) : 'En cours',
+                'Durée': calcDuree(v.heure_entree, v.heure_sortie)
+            }));
+            const ws = XLSX.utils.json_to_sheet(dataToExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Visiteurs');
+            XLSX.writeFile(wb, `historique_visiteurs_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`);
+        }
+
+        function exportStagiairesToExcel() {
+            if (!currentStagiairesData || currentStagiairesData.length === 0) {
+                alert('Aucune donnée à exporter');
+                return;
+            }
+            const dataToExport = currentStagiairesData.map(item => ({
+                'Stagiaire': item.stagiaire_nom || 'Inconnu',
+                'Date': formatDate(item.date),
+                'Heure entrée': item.entree ? item.entree.substring(0,5) : '—',
+                'Heure sortie': item.sortie ? item.sortie.substring(0,5) : '—',
+                'Enregistré par': item.agent || 'Système'
+            }));
+            const ws = XLSX.utils.json_to_sheet(dataToExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Pointages');
+            XLSX.writeFile(wb, `pointages_stagiaires_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`);
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tabVisiteurs').classList.toggle('active', tab === 'visiteurs');
+            document.getElementById('tabStagiaires').classList.toggle('active', tab === 'stagiaires');
+            document.getElementById('tabLogs').classList.toggle('active', tab === 'logs');
+            document.getElementById('sectionVisiteurs').style.display = tab === 'visiteurs' ? 'block' : 'none';
+            document.getElementById('sectionStagiaires').style.display = tab === 'stagiaires' ? 'block' : 'none';
+            document.getElementById('sectionLogs').style.display = tab === 'logs' ? 'block' : 'none';
+            if (tab === 'visiteurs') loadVisiteurs(1);
+            if (tab === 'stagiaires') loadStagiaires(1);
+            if (tab === 'logs') loadLogs(1);
+        }
+
+        function resetFiltresVisiteurs() {
+            const today = new Date().toISOString().split('T')[0];
+            const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+            document.getElementById('vDateDebut').value = firstDay;
+            document.getElementById('vDateFin').value = today;
+            document.getElementById('vSearch').value = '';
+            loadVisiteurs(1);
+        }
+
+        function resetFiltresStagiaires() {
+            const today = new Date().toISOString().split('T')[0];
+            const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+            document.getElementById('sDateDebut').value = firstDay;
+            document.getElementById('sDateFin').value = today;
+            document.getElementById('sSearch').value = '';
+            loadStagiaires(1);
+        }
+
+        function resetFiltresLogs() {
+            const today = new Date().toISOString().split('T')[0];
+            const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+            document.getElementById('lDateDebut').value = firstDay;
+            document.getElementById('lDateFin').value = today;
+            document.getElementById('lAction').value = 'tous';
+            document.getElementById('lSearch').value = '';
+            loadLogs(1);
+        }
+
+        async function init() {
+            const token = checkAuth();
+            if (!token) return;
+
+            const user = getUser();
+            
+            const tabLogs = document.getElementById('tabLogs');
+            if (user.role !== 'admin') {
+                tabLogs.style.display = 'none';
+            } else {
+                tabLogs.style.display = 'inline-flex';
+            }
+            
+            const badge = document.getElementById('roleBadge');
+            if (user.role === 'admin') {
+                badge.textContent = '👑 Administrateur';
+                badge.style.background = 'linear-gradient(135deg,#6c63ff,#a855f7)';
+            } else {
+                badge.textContent = '🛡️ Agent de sécurité';
+                badge.style.background = 'linear-gradient(135deg,#06b6d4,#0891b2)';
+            }
+            badge.style.color = '#fff';
+
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            const todayStr = today.toISOString().split('T')[0];
+
+            document.getElementById('vDateDebut').value = firstDay;
+            document.getElementById('vDateFin').value   = todayStr;
+            document.getElementById('sDateDebut').value = firstDay;
+            document.getElementById('sDateFin').value   = todayStr;
+            document.getElementById('lDateDebut').value = firstDay;
+            document.getElementById('lDateFin').value   = todayStr;
+
+            await loadStats();
+            await loadVisiteurs(1);
+        }
+        init();
+    </script>
+</body>
+</html>

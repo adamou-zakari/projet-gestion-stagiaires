@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Gestion Stagiaires & Visiteurs</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .ansi-logo {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+            flex-shrink: 0;
+            border-radius: 8px;
+        }
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .quick-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: #fff;
+            transition: transform 0.15s, box-shadow 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+        .quick-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0);
+            transition: background 0.15s;
+        }
+        .quick-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .quick-btn:hover::after { background: rgba(255,255,255,0.08); }
+        .quick-btn:active { transform: translateY(0); }
+        .quick-btn i { font-size: 16px; }
+        .quick-btn-stagiaire  { background: linear-gradient(135deg,#3b82f6,#1d4ed8); box-shadow: 0 3px 12px rgba(59,130,246,0.35); }
+        .quick-btn-visiteur   { background: linear-gradient(135deg,#8b5cf6,#6d28d9); box-shadow: 0 3px 12px rgba(139,92,246,0.35); }
+        .quick-btn-employe    { background: linear-gradient(135deg,#10b981,#059669); box-shadow: 0 3px 12px rgba(16,185,129,0.35); }
+        .quick-btn-securite   { background: linear-gradient(135deg,#f59e0b,#b45309); box-shadow: 0 3px 12px rgba(245,158,11,0.35); }
+        .quick-btn-agent      { background: linear-gradient(135deg,#f59e0b,#d97706); box-shadow: 0 3px 12px rgba(245,158,11,0.35); }
+        .quick-btn-historique { background: linear-gradient(135deg,#8b5cf6,#6d28d9); box-shadow: 0 3px 12px rgba(139,92,246,0.35); }
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) { .charts-section { grid-template-columns: 1fr; } }
+        .chart-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 20px;
+        }
+        .chart-card h4 {
+            margin: 0 0 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.75);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-card h4 i { color: #06b6d4; }
+        .chart-wrapper { position: relative; height: 200px; }
+        .table-container { margin-top: 20px; }
+        .filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: var(--bg-card);
+            padding: 15px 20px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+        .filters-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .filters-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .title-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .title-section h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .table-info-badge {
+            background: rgba(6,182,212,0.15);
+            color: #06b6d4;
+            border: 1px solid rgba(6,182,212,0.25);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .date-filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.05);
+            padding: 5px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .date-filter-group label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 500;
+        }
+        .date-filter-group input {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: #fff;
+            font-size: 12px;
+            outline: none;
+        }
+        .date-filter-group input:focus { border-color: #06b6d4; }
+        .date-filter-group button {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 6px;
+            padding: 5px 10px;
+            cursor: pointer;
+            color: #fff;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 9px 16px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .dropdown-btn:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: #06b6d4;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            min-width: 220px;
+            z-index: 100;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .dropdown-content.show { display: block; }
+        .dropdown-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover {
+            background: rgba(6,182,212,0.1);
+            color: #06b6d4;
+        }
+        .dropdown-item .badge-count {
+            margin-left: auto;
+            background: rgba(6,182,212,0.15);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #06b6d4;
+        }
+        .search-wrapper {
+            position: relative;
+        }
+        .search-icon-left {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #06b6d4;
+            font-size: 13px;
+            pointer-events: none;
+        }
+        .search-wrapper input {
+            background: rgba(255,255,255,0.06);
+            border: 1.5px solid rgba(6,182,212,0.25);
+            border-radius: 10px;
+            padding: 9px 90px 9px 38px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+            width: 260px;
+            box-sizing: border-box;
+        }
+        .search-wrapper input:focus {
+            border-color: rgba(6,182,212,0.7);
+            background: rgba(255,255,255,0.09);
+        }
+        .search-wrapper input::placeholder { color: rgba(255,255,255,0.35); }
+        .search-right {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .search-count {
+            font-size: 11px;
+            color: #06b6d4;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .search-clear-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: rgba(255,255,255,0.5);
+            font-size: 10px;
+        }
+        .search-clear-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+        mark {
+            background: rgba(6,182,212,0.25);
+            color: #06b6d4;
+            border-radius: 3px;
+            padding: 1px 3px;
+        }
+        .badge-present {
+            background: rgba(16,185,129,0.2);
+            color: #10b981;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .profil-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(6,182,212,0.12);
+            color: #06b6d4;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .profil-link:hover {
+            background: rgba(6,182,212,0.22);
+            transform: translateY(-1px);
+        }
+        .btn-sortie-quick {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #f87171;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-sortie-quick:hover {
+            background: rgba(239,68,68,0.3);
+            transform: translateY(-1px);
+        }
+        @media (max-width: 768px) {
+            .filters-row { flex-direction: column; align-items: stretch; }
+            .filters-left { justify-content: center; }
+            .filters-right { justify-content: center; }
+            .search-wrapper input { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <img src="logo.png" alt="Logo ANSI" class="ansi-logo" onerror="this.style.display='none'">
+                <h1>Gestion des Entrées/Sorties</h1>
+            </div>
+            <div class="user-info">
+                <span class="role-badge" id="roleBadge"></span>
+                <i class="fas fa-user-circle"></i>
+                <span id="userName"></span>
+                <a href="profil.html" class="profil-link">
+                    <i class="fas fa-user-edit"></i> Mon profil
+                </a>
+                <button type="button" class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+        </div>
+
+        <div class="cards">
+            <div class="card">
+                <i class="fas fa-user-graduate card-icon"></i>
+                <h3>Stagiaires</h3>
+                <div class="number" id="nbStagiaires">0</div>
+            </div>
+            <div class="card">
+                <i class="fas fa-users card-icon"></i>
+                <h3>Visiteurs aujourd'hui</h3>
+                <div class="number" id="nbVisiteurs">0</div>
+            </div>
+            <div class="card">
+                <i class="fas fa-user-check card-icon"></i>
+                <h3>Visiteurs présents</h3>
+                <div class="number" id="nbPresent">0</div>
+            </div>
+            <div class="card">
+                <i class="fas fa-id-badge card-icon"></i>
+                <h3>Employés ANSI</h3>
+                <div class="number" id="nbEmployes">0</div>
+            </div>
+            <div class="card" id="cardSecurite" style="display:none;">
+                <i class="fas fa-shield-alt card-icon"></i>
+                <h3>Sécurité</h3>
+                <div class="number" id="nbSecurite">0</div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button class="quick-btn quick-btn-stagiaire" id="btnStagiaires" onclick="window.location.href='stagiaires.html'">
+                <i class="fas fa-user-graduate"></i> Gérer les stagiaires
+            </button>
+            <button class="quick-btn quick-btn-visiteur" id="btnVisiteurs" onclick="window.location.href='visiteurs.html'">
+                <i class="fas fa-users"></i> Enregistrer une visite
+            </button>
+            <button class="quick-btn quick-btn-employe" id="btnEmployes" onclick="window.location.href='employes.html'">
+                <i class="fas fa-id-badge"></i> Gérer les employés
+            </button>
+            <button class="quick-btn quick-btn-securite" id="btnSecurite" style="display:none;" onclick="window.location.href='securite.html'">
+                <i class="fas fa-shield-alt"></i> Gérer les agents de sécurité
+            </button>
+            <button class="quick-btn quick-btn-agent" id="btnAccueilAgent" onclick="window.location.href='accueil-agent.html'">
+                <i class="fas fa-clipboard-list"></i> Pointage stagiaires 
+            </button>
+            <button class="quick-btn quick-btn-historique" id="btnHistorique" onclick="window.location.href='historique.html'">
+                <i class="fas fa-history"></i> Historique
+            </button>
+        </div>
+
+        <div class="charts-section">
+            <div class="chart-card">
+                <h4><i class="fas fa-chart-bar"></i> Visiteurs — 7 derniers jours</h4>
+                <div class="chart-wrapper">
+                    <canvas id="chartVisiteurs"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h4><i class="fas fa-chart-pie"></i> Statut des visites du jour</h4>
+                <div class="chart-wrapper">
+                    <canvas id="chartStatut"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="filters-row">
+                <div class="filters-left">
+                    <div class="title-section">
+                        <h3><i class="fas fa-history"></i> Derniers visiteurs</h3>
+                        <span class="table-info-badge" id="tableInfo">Chargement...</span>
+                    </div>
+                    <div class="date-filter-group">
+                        <label>Du</label>
+                        <input type="date" id="filterDateDebut" onchange="filterVisiteurs()">
+                        <label>Au</label>
+                        <input type="date" id="filterDateFin" onchange="filterVisiteurs()">
+                        <button onclick="resetDateFilter()" title="Réinitialiser"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div class="filters-right">
+                    <div class="dropdown">
+                        <button class="dropdown-btn" onclick="toggleDropdown()">
+                            <i class="fas fa-filter"></i>
+                            <span id="selectedFilterText">Tous</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-content" id="dropdownMenu">
+                            <div class="dropdown-item" onclick="selectFilter('tous', 'Tous')">
+                                <i class="fas fa-list"></i> Tous
+                                <span class="badge-count" id="badgeTous">0</span>
+                            </div>
+                            <div class="dropdown-item" onclick="selectFilter('encours', 'En cours')">
+                                <i class="fas fa-circle" style="color:#10b981; font-size:10px;"></i> En cours
+                                <span class="badge-count" id="badgeEnCours">0</span>
+                            </div>
+                            <div class="dropdown-item" onclick="selectFilter('sortis', 'Sortis')">
+                                <i class="fas fa-door-open"></i> Sortis
+                                <span class="badge-count" id="badgeSortis">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="search-wrapper">
+                        <i class="fas fa-search search-icon-left"></i>
+                        <input type="text" id="searchInput"
+                            placeholder="Nom, prénom, structure, personne visitée..."
+                            oninput="filterVisiteurs()" />
+                        <div class="search-right">
+                            <span class="search-count" id="searchCount"></span>
+                            <button class="search-clear-btn" onclick="clearSearch()" title="Effacer">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <table id="derniersVisiteurs">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Structure</th>
+                        <th>Personne visitée</th>
+                        <th>Direction</th>
+                        <th>Date</th>
+                        <th>Heure entrée</th>
+                        <th>Sortie</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="visiteursBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let allVisiteurs  = [];
+        let barChart      = null;
+        let doughnutChart = null;
+        let currentUser   = null;
+        let activeFilter  = 'tous';
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            if (isNaN(d)) return dateStr;
+            return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
+        }
+
+        function getUser() {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) return null;
+            try { return JSON.parse(userStr); }
+            catch (e) { return null; }
+        }
+
+        function setUser(user) { localStorage.setItem('user', JSON.stringify(user)); }
+
+        function getUserDisplayName(user) {
+            if (!user) return 'Utilisateur';
+            if (user.prenom && user.nom) return `${user.prenom} ${user.nom}`;
+            if (user.name) return user.name;
+            if (user.email) return user.email;
+            return 'Utilisateur';
+        }
+
+        function highlight(text, q) {
+            if (!q || !text) return text || '-';
+            const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+            return text.replace(re, '<mark>$1</mark>');
+        }
+
+        function applyRoleUI(user) {
+            const badge = document.getElementById('roleBadge');
+            const btnStagiaires = document.getElementById('btnStagiaires');
+            const btnVisiteurs = document.getElementById('btnVisiteurs');
+            const btnEmployes = document.getElementById('btnEmployes');
+            const btnSecurite = document.getElementById('btnSecurite');
+            const btnAccueilAgent = document.getElementById('btnAccueilAgent');
+            const btnHistorique = document.getElementById('btnHistorique');
+            const cardSecurite = document.getElementById('cardSecurite');
+
+            const userRole = user && user.role ? user.role : 'agent';
+
+            if (userRole === 'admin') {
+                if (btnStagiaires) btnStagiaires.style.display = 'inline-flex';
+                if (btnVisiteurs) btnVisiteurs.style.display = 'inline-flex';
+                if (btnEmployes) btnEmployes.style.display = 'inline-flex';
+                if (btnSecurite) btnSecurite.style.display = 'inline-flex';
+                if (btnAccueilAgent) btnAccueilAgent.style.display = 'inline-flex';
+                if (btnHistorique) btnHistorique.style.display = 'inline-flex';
+                if (cardSecurite) cardSecurite.style.display = 'block';
+                badge.textContent = '👑 Administrateur';
+                badge.style.background = 'linear-gradient(135deg,#6c63ff,#a855f7)';
+            } else {
+                if (btnStagiaires) btnStagiaires.style.display = 'none';
+                if (btnVisiteurs) btnVisiteurs.style.display = 'inline-flex';
+                if (btnEmployes) btnEmployes.style.display = 'none';
+                if (btnSecurite) btnSecurite.style.display = 'none';
+                if (btnAccueilAgent) btnAccueilAgent.style.display = 'inline-flex';
+                if (btnHistorique) btnHistorique.style.display = 'inline-flex';
+                if (cardSecurite) cardSecurite.style.display = 'none';
+                badge.textContent = '🛡️ Agent de sécurité';
+                badge.style.background = 'linear-gradient(135deg,#06b6d4,#0891b2)';
+            }
+            badge.style.color = '#fff';
+        }
+
+        function resetDateFilter() {
+            document.getElementById('filterDateDebut').value = '';
+            document.getElementById('filterDateFin').value = '';
+            filterVisiteurs();
+        }
+
+        function toggleDropdown() {
+            document.getElementById('dropdownMenu').classList.toggle('show');
+        }
+
+        function selectFilter(filter, text) {
+            activeFilter = filter;
+            document.getElementById('selectedFilterText').textContent = text;
+            document.getElementById('dropdownMenu').classList.remove('show');
+            filterVisiteurs();
+        }
+
+        function updateFilterBadges(visiteurs) {
+            const total = visiteurs.length;
+            const encours = visiteurs.filter(v => !v.heure_sortie).length;
+            const sortis = visiteurs.filter(v => v.heure_sortie).length;
+            document.getElementById('badgeTous').textContent = total;
+            document.getElementById('badgeEnCours').textContent = encours;
+            document.getElementById('badgeSortis').textContent = sortis;
+        }
+
+        document.addEventListener('click', function(event) {
+            const dropdown = document.querySelector('.dropdown');
+            if (dropdown && !dropdown.contains(event.target)) {
+                document.getElementById('dropdownMenu').classList.remove('show');
+            }
+        });
+
+        function getFilteredList() {
+            let list = [...allVisiteurs];
+            const dateDebut = document.getElementById('filterDateDebut').value;
+            const dateFin = document.getElementById('filterDateFin').value;
+            
+            if (dateDebut) list = list.filter(v => v.date_visite >= dateDebut);
+            if (dateFin) list = list.filter(v => v.date_visite <= dateFin);
+            if (activeFilter === 'encours') list = list.filter(v => !v.heure_sortie);
+            if (activeFilter === 'sortis') list = list.filter(v => v.heure_sortie);
+            
+            const input = document.getElementById('searchInput');
+            const q = input ? input.value.trim().toLowerCase() : '';
+            if (q) {
+                list = list.filter(v => {
+                    const pv = (v.employe_nom ? `${v.employe_prenom || ''} ${v.employe_nom}` : '').toLowerCase();
+                    const dir = (v.direction || '').toLowerCase();
+                    const service = (v.service_dorigine || '').toLowerCase();
+                    return (v.nom || '').toLowerCase().includes(q) ||
+                           (v.prenom || '').toLowerCase().includes(q) ||
+                           pv.includes(q) || 
+                           dir.includes(q) ||
+                           service.includes(q);
+                });
+            }
+            return { list, q };
+        }
+
+        function filterVisiteurs() {
+            const { list, q } = getFilteredList();
+            const count = document.getElementById('searchCount');
+            updateFilterBadges(list);
+            const raw = document.getElementById('searchInput').value.trim();
+            if (count) count.textContent = raw ? `${list.length} résultat${list.length !== 1 ? 's' : ''}` : '';
+            renderTable(list, raw);
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchCount').textContent = '';
+            filterVisiteurs();
+        }
+
+        function renderTable(visiteurs, query = '') {
+            const tbody = document.getElementById('visiteursBody');
+            const info = document.getElementById('tableInfo');
+            tbody.innerHTML = '';
+
+            const sorted = [...visiteurs].sort((a, b) => {
+                const da = new Date(`${a.date_visite}T${a.heure_entree || '00:00:00'}`);
+                const db = new Date(`${b.date_visite}T${b.heure_entree || '00:00:00'}`);
+                return db - da;
+            });
+            const top10 = sorted.slice(0, 10);
+
+            if (!top10 || top10.length === 0) {
+                const row = tbody.insertRow();
+                const cell = row.insertCell(0);
+                cell.colSpan = 9;
+                cell.textContent = query ? `Aucun résultat pour "${query}"` : "Aucun visiteur";
+                cell.style.cssText = 'text-align:center;opacity:0.5;padding:20px';
+                info.textContent = '0 visiteur';
+                return;
+            }
+
+            info.textContent = `${top10.length} dernier${top10.length > 1 ? 's' : ''} visiteur${top10.length > 1 ? 's' : ''}`;
+
+            top10.forEach(v => {
+                const row = tbody.insertRow();
+                const personneVisitee = v.employe_nom ? `${v.employe_prenom || ''} ${v.employe_nom}`.trim() : '-';
+                const direction = v.direction || '-';
+                const serviceOrigine = v.service_dorigine || '-';
+                
+                row.insertCell(0).innerHTML = highlight(v.nom || '-', query);
+                row.insertCell(1).innerHTML = highlight(v.prenom || '-', query);
+                row.insertCell(2).innerHTML = highlight(serviceOrigine, query);
+                row.insertCell(3).innerHTML = highlight(personneVisitee, query);
+                row.insertCell(4).innerHTML = highlight(direction, query);
+                row.insertCell(5).textContent = formatDate(v.date_visite);
+                row.insertCell(6).textContent = v.heure_entree ? v.heure_entree.substring(0,5) : '-';
+                row.insertCell(7).innerHTML = v.heure_sortie ? v.heure_sortie.substring(0,5) : '<span class="badge-present">En cours</span>';
+
+                const actionCell = row.insertCell(8);
+                if (!v.heure_sortie) {
+                    actionCell.innerHTML = `<button class="btn-sortie-quick" onclick="enregistrerSortieDepuisDashboard(${v.id}, '${(v.nom||'').replace(/'/g,"\\'")}', '${(v.prenom||'').replace(/'/g,"\\'")}')"><i class="fas fa-door-closed"></i> Sortie</button>`;
+                } else {
+                    actionCell.innerHTML = '<span style="color:#6b7280;">Terminé</span>';
+                }
+            });
+        }
+
+        async function enregistrerSortieDepuisDashboard(visiteId, nom, prenom) {
+            if (!confirm(`Confirmer la sortie de ${prenom} ${nom} ?`)) return;
+            try {
+                const response = await apiRequest(`http://localhost:3000/api/visiteurs/sortie/${visiteId}`, { method: 'PUT' });
+                if (response.ok) {
+                    alert(`✅ ${prenom} ${nom} — Sortie enregistrée`);
+                    await loadDashboard();
+                } else {
+                    const error = await response.json();
+                    alert('❌ Erreur: ' + (error.message || 'Erreur lors de la sortie'));
+                }
+            } catch (error) {
+                alert('❌ Erreur de connexion');
+            }
+        }
+
+        function buildChartBarres(data) {
+            const canvas = document.getElementById('chartVisiteurs');
+            if (!canvas) return;
+            if (barChart) barChart.destroy();
+            const labels = [], values = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                labels.push(d.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric' }));
+                const ds = d.toISOString().split('T')[0];
+                values.push(data.filter(v => (v.date_visite || '').startsWith(ds)).length);
+            }
+            barChart = new Chart(canvas, {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Visiteurs', data: values, backgroundColor: 'rgba(6,182,212,0.65)', borderColor: '#06b6d4', borderWidth: 1, borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 11 }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true } } }
+            });
+        }
+
+        function buildChartStatut(visiteurs) {
+            const canvas = document.getElementById('chartStatut');
+            if (!canvas) return;
+            if (doughnutChart) doughnutChart.destroy();
+            const presents = visiteurs.filter(v => !v.heure_sortie).length;
+            const sortis = visiteurs.filter(v => v.heure_sortie).length;
+            doughnutChart = new Chart(canvas, {
+                type: 'doughnut',
+                data: { labels: ['En cours', 'Sortis'], datasets: [{ data: [presents, sortis], backgroundColor: ['rgba(16,185,129,0.75)', 'rgba(107,114,128,0.5)'], borderColor: ['#10b981', '#6b7280'], borderWidth: 2 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,0.6)', font: { size: 12 }, padding: 16 } } } }
+            });
+        }
+
+        async function apiRequest(url, options = {}) {
+            const token = localStorage.getItem('token');
+            const response = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...(options.headers || {}) } });
+            if (response.status === 401) { logout(); throw new Error('Non authentifié'); }
+            return response;
+        }
+
+        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+        function checkAuth() { const token = localStorage.getItem('token'); if (!token) { window.location.href = 'index.html'; return null; } return token; }
+
+        async function refreshUserInfo() {
+            try {
+                const res = await apiRequest('http://localhost:3000/api/auth/me');
+                if (res.ok) {
+                    const freshUser = await res.json();
+                    const storedUser = getUser();
+                    if (storedUser) {
+                        storedUser.nom = freshUser.nom; storedUser.prenom = freshUser.prenom;
+                        storedUser.email = freshUser.email; storedUser.role = freshUser.role;
+                        setUser(storedUser);
+                    } else { setUser(freshUser); }
+                    return freshUser;
+                }
+            } catch (err) {}
+            return getUser();
+        }
+
+        async function loadDashboard() {
+            const token = checkAuth();
+            if (!token) return;
+            currentUser = await refreshUserInfo();
+            if (!currentUser) { window.location.href = 'index.html'; return; }
+            document.getElementById('userName').textContent = `${getUserDisplayName(currentUser)} (${currentUser.role || 'agent'})`;
+            applyRoleUI(currentUser);
+            try {
+                const resSt = await apiRequest('http://localhost:3000/api/stagiaires');
+                const stagiaires = await resSt.json();
+                document.getElementById('nbStagiaires').textContent = stagiaires.length;
+                try {
+                    const resEmp = await apiRequest('http://localhost:3000/api/employes');
+                    const employes = await resEmp.json();
+                    document.getElementById('nbEmployes').textContent = employes.length;
+                } catch { document.getElementById('nbEmployes').textContent = '0'; }
+                const resV = await apiRequest('http://localhost:3000/api/visiteurs/today');
+                const visiteurs = await resV.json();
+                document.getElementById('nbVisiteurs').textContent = visiteurs.length;
+                document.getElementById('nbPresent').textContent = visiteurs.filter(v => !v.heure_sortie).length;
+                if (currentUser.role === 'admin') {
+                    try {
+                        const resU = await apiRequest('http://localhost:3000/api/auth/users');
+                        const users = await resU.json();
+                        document.getElementById('nbSecurite').textContent = users.length;
+                    } catch { document.getElementById('nbSecurite').textContent = '-'; }
+                }
+                allVisiteurs = visiteurs;
+                filterVisiteurs();
+                buildChartStatut(visiteurs);
+                try {
+                    const resAll = await apiRequest('http://localhost:3000/api/visiteurs');
+                    const allVisiteursData = await resAll.json();
+                    buildChartBarres(allVisiteursData);
+                } catch { buildChartBarres(visiteurs); }
+            } catch (err) { console.error(err); }
+        }
+
+        window.enregistrerSortieDepuisDashboard = enregistrerSortieDepuisDashboard;
+        window.resetDateFilter = resetDateFilter;
+        window.toggleDropdown = toggleDropdown;
+        window.selectFilter = selectFilter;
+        loadDashboard();
+    </script>
+</body>
+</html>

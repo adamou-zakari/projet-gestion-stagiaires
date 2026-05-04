@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANSI Niger — Connexion</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* ── GAUCHE ── */
+        .welcome-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 60px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .welcome-side::before {
+            content: '';
+            position: absolute;
+            width: 500px; height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 65%);
+            top: -150px; left: -100px;
+            pointer-events: none;
+        }
+        .welcome-side::after {
+            content: '';
+            position: absolute;
+            width: 350px; height: 350px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 65%);
+            bottom: -80px; right: 0;
+            pointer-events: none;
+        }
+
+        .welcome-content {
+            position: relative;
+            z-index: 2;
+            animation: fadeSlideUp 0.6s ease both;
+            max-width: 480px;
+        }
+
+        .welcome-logo {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            margin-bottom: 24px;
+            mix-blend-mode: screen;
+            filter: drop-shadow(0 0 16px rgba(0,212,255,0.3));
+        }
+
+        .welcome-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,212,255,0.08);
+            border: 1px solid rgba(0,212,255,0.2);
+            color: var(--accent-1);
+            padding: 5px 18px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        .welcome-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .welcome-title span { color: var(--accent-1); }
+
+        .welcome-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+            letter-spacing: 0.3px;
+        }
+
+        .welcome-divider {
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
+            border-radius: 2px;
+            margin: 0 auto 28px;
+        }
+
+        .welcome-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        .ansi-footer {
+            margin-top: 40px;
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.3px;
+        }
+
+        /* ── DROITE — CONNEXION ── */
+        .login-side {
+            width: 460px;
+            flex-shrink: 0;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-side::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-2), var(--accent-1), var(--accent-3));
+        }
+
+        .login-side::after {
+            content: '';
+            position: absolute;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(124,58,237,0.05) 0%, transparent 70%);
+            bottom: -80px; right: -80px;
+            pointer-events: none;
+        }
+
+        .login-inner {
+            width: 100%;
+            position: relative;
+            z-index: 2;
+            animation: fadeSlideUp 0.5s ease 0.1s both;
+        }
+
+        .login-top {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .login-icon-box {
+            width: 58px; height: 58px;
+            background: rgba(0,212,255,0.08);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: var(--accent-1);
+            margin: 0 auto 14px;
+            box-shadow: 0 0 20px rgba(0,212,255,0.1);
+        }
+
+        .login-top h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--accent-1);
+            margin-bottom: 5px;
+        }
+
+        .login-top p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .input-wrap { position: relative; }
+
+        .input-wrap .ico {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-1);
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        .input-wrap input {
+            padding-left: 40px !important;
+            padding-right: 44px !important;
+        }
+
+        .toggle-pass {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .toggle-pass:hover { color: var(--accent-1); }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--accent-2), var(--accent-1));
+        }
+        .btn-login.loading { opacity: 0.7; pointer-events: none; }
+
+        .error-box {
+            display: none;
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: var(--accent-danger);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            margin-top: 14px;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .login-hint {
+            margin-top: 22px;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            justify-content: center;
+        }
+        .login-hint i { color: var(--accent-1); font-size: 12px; }
+
+        @media (max-width: 900px) {
+            .welcome-side { display: none; }
+            .login-side { width: 100%; border-left: none; overflow-y: auto; }
+            html, body { overflow: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- GAUCHE -->
+    <div class="welcome-side">
+        <div class="welcome-content">
+
+            <img src="logo.png" alt="ANSI Niger" class="welcome-logo"
+                 onerror="this.style.display='none'">
+
+            <div class="welcome-tag">
+                <i class="fas fa-shield-alt"></i>
+                Système officiel — ANSI Niger
+            </div>
+
+            <h1 class="welcome-title">
+                Agence Nationale de la<br>
+                Société de l'<span>Information</span>
+            </h1>
+
+            <p class="welcome-subtitle">
+                République du Niger — Ministère du Numérique
+            </p>
+
+            <div class="welcome-divider"></div>
+
+            <p class="welcome-desc">
+                Plateforme sécurisée de gestion des entrées et sorties<br>
+                des stagiaires et visiteurs de l'ANSI Niger.
+            </p>
+
+            <div class="ansi-footer">
+                © 2026 ANSI Niger — All rights reserved | Developed by an MSTATE student
+            </div>
+
+        </div>
+    </div>
+
+    <!-- DROITE -->
+    <div class="login-side">
+        <div class="login-inner">
+
+            <div class="login-top">
+                <div class="login-icon-box">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h2>Connexion</h2>
+                <p>Accès réservé au personnel autorisé</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Identifiant</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-user ico"></i>
+                        <input type="text" id="identifiant"
+                               placeholder="Login ou email"
+                               required autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-key"></i> Mot de passe</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-key ico"></i>
+                        <input type="password" id="password"
+                               placeholder="••••••••" required>
+                        <i class="fas fa-eye-slash toggle-pass"
+                           id="togglePwd" onclick="togglePass()"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="btnLogin">
+                    <i class="fas fa-sign-in-alt"></i> Se connecter
+                </button>
+
+                <div class="error-box" id="errorBox"></div>
+            </form>
+
+            <div class="login-hint">
+                <i class="fas fa-info-circle"></i>
+                Contactez votre administrateur pour obtenir un accès
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function togglePass() {
+            const input = document.getElementById('password');
+            const icon  = document.getElementById('togglePwd');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            }
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorBox');
+            el.innerHTML = '<i class="fas fa-times-circle"></i> ' + msg;
+            el.style.display = 'flex';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            document.getElementById('errorBox').style.display = 'none';
+
+            const btn         = document.getElementById('btnLogin');
+            const identifiant = document.getElementById('identifiant').value.trim();
+            const password    = document.getElementById('password').value;
+
+            btn.classList.add('loading');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connexion en cours...';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifiant, mot_de_passe: password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = 'dashboard.html';
+                } else {
+                    showError(data.message || 'Identifiant ou mot de passe incorrect');
+                    btn.classList.remove('loading');
+                    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se connecter';
+                }
+            } catch (error) {
+                showError('Impossible de contacter le serveur');
+                btn.classList.remove('loading');
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se connecter';
+            }
+        });
+    </script>
+
+</body>
+</html>
