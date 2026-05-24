@@ -305,14 +305,107 @@ const updateUser = async (req, res) => {
     }
 };
 
+// ─── GET /api/auth/setup/check ────────────────────────────────────────────────
+// Vérifie si un admin existe déjà (pour le Setup Wizard)
+const setupCheck = async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            "SELECT COUNT(*) as count FROM utilisateurs WHERE role = 'admin'"
+        );
+        const configured = rows[0].count > 0;
+        res.json({ configured });
+    } catch (error) {
+        console.error('Erreur setupCheck:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+};
+
+// ─── POST /api/auth/setup ─────────────────────────────────────────────────────
+// Crée le premier compte admin (bloqué si un admin existe déjà)
+const setupCreate = async (req, res) => {
+    try {
+        // Vérifier qu'aucun admin n'existe
+        const [rows] = await db.query(
+            "SELECT COUNT(*) as count FROM utilisateurs WHERE role = 'admin'"
+        );
+        if (rows[0].count > 0) {
+            return res.status(403).json({
+                message: 'Le système est déjà configuré. Setup non autorisé.'
+            });
+        }
+
+        const { nom, prenom, login, mot_de_passe } = req.body;
+
+        if (!nom || !prenom || !login || !mot_de_passe) {
+            return res.status(400).json({ message: 'Tous les champs sont obligatoires' });
+        }
+        if (mot_de_passe.length < 6) {
+            return res.status(400).json({ message: 'Le mot de passe doit contenir au moins 6 caractères' });
+        }
+
+        // Vérifier login unique
+        const [existing] = await db.query(
+            'SELECT id FROM utilisateurs WHERE login = ?', [login]
+        );
+        if (existing.length > 0) {
+            return res.status(400).json({ message: 'Cet identifiant est déjà utilisé' });
+        }
+
+        const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
+
+        const [result] = await db.query(
+            'INSERT INTO utilisateurs (nom, prenom, login, mot_de_passe, role) VALUES (?, ?, ?, ?, ?)',
+            [nom, prenom, login, hashedPassword, 'admin']
+        );
+
+        await logAction('SETUP_ADMIN', result.insertId, `Compte admin initial créé : ${login}`, req.ip);
+
+        res.status(201).json({ message: 'Compte administrateur créé avec succès' });
+
+    } catch (error) {
+        console.error('Erreur setupCreate:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+};
+
+// ─── DELETE /api/auth/reset-system ───────────────────────────────────────────
+// Supprime tous les comptes — réservé admin — retour au setup
+const resetSystem = async (req, res) => {
+    try {
+        // Vérifier que c'est bien un admin qui fait la demande
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Accès refusé' });
+        }
+        // Supprimer tous les utilisateurs
+        await db.query('DELETE FROM utilisateurs');
+        res.json({ message: 'Système réinitialisé avec succès' });
+    } catch (error) {
+        console.error('Erreur resetSystem:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+};
+
+// ─── DELETE /api/auth/clear-data ─────────────────────────────────────────────
+// Efface toutes les données (visiteurs, stagiaires, pointages, logs)
+const clearData = async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Accès refusé' });
+        }
+        // Supprimer dans l'ordre pour respecter les clés étrangères
+        await db.query('DELETE FROM logs');
+        await db.query('DELETE FROM pointages_stagiaires');
+        await db.query('DELETE FROM visiteurs');
+        await db.query('DELETE FROM stagiaires');
+        res.json({ message: 'Données effacées avec succès' });
+    } catch (error) {
+        console.error('Erreur clearData:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+};
+
 module.exports = {
-    register,
-    login,
-    me,
-    updateMe,
-    updateMyPassword,
-    getAllUsers,
-    getUserById,
-    deleteUser,
-    updateUser
+    register, login, me, updateMe, updateMyPassword,
+    getAllUsers, getUserById, deleteUser, updateUser,
+    setupCheck, setupCreate, resetSystem, clearData
 };

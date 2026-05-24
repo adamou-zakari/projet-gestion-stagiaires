@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rapports — ANSI</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+<style>
+.stats-grid-r { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.stat-card-r { background:var(--surface); border-radius:24px; padding:20px 18px; border:1px solid var(--border); box-shadow:var(--shadow-sm); position:relative; overflow:hidden; transition:transform .25s,box-shadow .25s; }
+.stat-card-r:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
+.stat-card-r::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; transform:scaleX(0); transform-origin:left; transition:transform .3s; }
+.stat-card-r:hover::after { transform:scaleX(1); }
+.stat-card-r:nth-child(1)::after { background:linear-gradient(90deg,#1671d9,#3b9eff); }
+.stat-card-r:nth-child(2)::after { background:linear-gradient(90deg,#0d9e8e,#2dd4bf); }
+.stat-card-r:nth-child(3)::after { background:linear-gradient(90deg,#d97706,#fbbf24); }
+.stat-card-r:nth-child(4)::after { background:linear-gradient(90deg,#6c47d6,#a78bfa); }
+.stat-icon-r { width:48px; height:48px; border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:14px; }
+.stat-card-r:nth-child(1) .stat-icon-r { background:rgba(22,113,217,0.12); color:#1671d9; }
+.stat-card-r:nth-child(2) .stat-icon-r { background:rgba(13,158,142,0.12); color:#0d9e8e; }
+.stat-card-r:nth-child(3) .stat-icon-r { background:rgba(217,119,6,0.12); color:#d97706; }
+.stat-card-r:nth-child(4) .stat-icon-r { background:rgba(108,71,214,0.12); color:#6c47d6; }
+.stat-label-r  { font-size:11px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+.stat-number-r { font-family:'Space Grotesk',sans-serif; font-size:34px; font-weight:800; color:var(--text-1); line-height:1.1; letter-spacing:-1px; }
+
+.charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.chart-card { background:var(--surface); border-radius:var(--r-lg); padding:20px; border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+.chart-card h3 { font-size:14px; font-weight:600; color:var(--text-1); display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+.chart-card h3 i { color:var(--blue); }
+.chart-inner { height:240px; position:relative; }
+
+@media(max-width:1200px){ .stats-grid-r{grid-template-columns:repeat(2,1fr)} .charts-grid{grid-template-columns:1fr} }
+@media(max-width:700px){ .stats-grid-r{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><img src="logo.png" alt="ANSI" onerror="this.style.display='none'"></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label" data-i18n="principal">Principal</div>
+    <a class="sidebar-link"  href="dashboard.html"><i class="fas fa-th-large"></i><span data-i18n="tableau_bord">Tableau de bord</span></a>
+    <a class="sidebar-link" id="btnStagiaires" href="stagiaires.html"><i class="fas fa-user-graduate"></i><span data-i18n="stagiaires">Stagiaires</span></a>
+    <a class="sidebar-link"  href="visiteurs.html"><i class="fas fa-users"></i><span data-i18n="visiteurs">Visiteurs</span></a>
+    <a class="sidebar-link" id="btnEmployes" href="employes.html"><i class="fas fa-id-badge"></i><span data-i18n="employes">Employés</span></a>
+    <a class="sidebar-link" id="btnSecurite" href="securite.html"><i class="fas fa-shield-alt"></i><span data-i18n="agents_securite">Agents de sécurité</span></a>
+    <a class="sidebar-link"  href="accueil-agent.html"><i class="fas fa-clipboard-check"></i><span data-i18n="pointage_stagiaires">Pointage stagiaires</span></a>
+    <div class="nav-section-label" data-i18n="donnees">Données</div>
+    <a class="sidebar-link"  href="historique.html"><i class="fas fa-history"></i><span data-i18n="historique">Historique</span></a>
+    <a class="sidebar-link active"  href="rapports.html"><i class="fas fa-chart-bar"></i><span data-i18n="rapports">Rapports</span></a>
+    <div class="nav-section-label" data-i18n="systeme">Système</div>
+    <a class="sidebar-link"  href="parametres.html"><i class="fas fa-cog"></i><span data-i18n="parametres">Paramètres</span></a>
+    <a class="sidebar-link"  href="profil.html"><i class="fas fa-user-edit"></i><span data-i18n="mon_profil">Mon profil</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user" onclick="window.location.href='profil.html'">
+      <div class="sidebar-avatar" id="sidebarInitials">--</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">—</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">—</div>
+      </div>
+      <i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.25);font-size:10px"></i>
+    </div>
+    <button class="sb-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span data-i18n="deconnexion">Déconnexion</span></button>
+  </div>
+</aside>
+
+<div class="main-wrapper" id="mainWrapper">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <span class="topbar-title" data-i18n="rapports">Rapports & Statistiques</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn" onclick="window.showNotificationsModal && window.showNotificationsModal()">
+        <i class="fas fa-bell"></i><span class="notif-badge hidden">0</span>
+      </button>
+      <button class="topbar-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h2><i class="fas fa-chart-line"></i> <span data-i18n="statistiques">Statistiques avancées</span></h2>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid-r">
+      <div class="stat-card-r">
+        <div class="stat-icon-r"><i class="fas fa-calendar-week"></i></div>
+        <div class="stat-label-r" data-i18n="visiteurs_30j">Visiteurs (30j)</div>
+        <div class="stat-number-r" id="totalMois">—</div>
+      </div>
+      <div class="stat-card-r">
+        <div class="stat-icon-r"><i class="fas fa-building"></i></div>
+        <div class="stat-label-r" data-i18n="nb_directions">Directions</div>
+        <div class="stat-number-r" id="nbDirections">—</div>
+      </div>
+      <div class="stat-card-r">
+        <div class="stat-icon-r"><i class="fas fa-user-clock"></i></div>
+        <div class="stat-label-r" data-i18n="duree_moy">Durée moy. (min)</div>
+        <div class="stat-number-r" id="moyenneDuree">—</div>
+      </div>
+      <div class="stat-card-r">
+        <div class="stat-icon-r"><i class="fas fa-chart-simple"></i></div>
+        <div class="stat-label-r" data-i18n="taux_occupation">Taux occupation</div>
+        <div class="stat-number-r" id="tauxOccupation">—%</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3><i class="fas fa-chart-line"></i> <span data-i18n="visiteurs_mois">Visiteurs par mois</span></h3>
+        <div class="chart-inner"><canvas id="chartMensuel"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3><i class="fas fa-chart-pie"></i> <span data-i18n="repartition_direction">Répartition par direction</span></h3>
+        <div class="chart-inner"><canvas id="chartDirection"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3><i class="fas fa-chart-bar"></i> <span data-i18n="jours_affluence">Jours de forte affluence</span></h3>
+        <div class="chart-inner"><canvas id="chartHebdo"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3><i class="fas fa-chart-area"></i> <span data-i18n="presents_7j">Présents — 7 derniers jours</span></h3>
+        <div class="chart-inner"><canvas id="chartPoints"></canvas></div>
+      </div>
+    </div>
+
+    <div class="footer-buttons">
+      <button class="btn-back" onclick="window.location.href='dashboard.html'">
+        <i class="fas fa-arrow-left"></i> <span data-i18n="retour_dashboard">Retour au Dashboard</span>
+      </button>
+    </div>
+  </main>
+
+  <footer class="page-footer">
+    <span>© 2026 ANSI — <span data-i18n="footer_droits">Tous droits réservés.</span></span>
+    <span>Version 1.0.0 · <span data-i18n="footer_version">Système de gestion des entrées/sorties</span></span>
+  </footer>
+</div>
+
+<script src="script.js"></script>
+<script src="notifications.js"></script>
+<script src="lang.js"></script>
+<script>
+// ── Variables ──
+let chartMensuel = null, chartDirection = null, chartHebdo = null, chartPoints = null;
+
+// ── Chargement données ──
+async function chargerDonnees() {
+  try {
+    const [resVis, resDir] = await Promise.all([
+      apiRequest('http://localhost:3000/api/visiteurs'),
+      apiRequest('http://localhost:3000/api/directions')
+    ]);
+    const visiteurs   = await resVis.json();
+    const directions  = await resDir.json();
+
+    // Nb directions
+    document.getElementById('nbDirections').textContent = directions.length;
+
+    // Visiteurs 30 derniers jours
+    const lim = new Date(); lim.setDate(lim.getDate() - 30);
+    const v30j = visiteurs.filter(v => v.date_visite && new Date(v.date_visite) >= lim);
+    document.getElementById('totalMois').textContent = v30j.length;
+
+    // Durée moyenne (en minutes)
+    let totalMin = 0, nb = 0;
+    visiteurs.forEach(v => {
+      if (v.heure_entree && v.heure_sortie && v.date_visite) {
+        const e = new Date(`${v.date_visite}T${v.heure_entree}`);
+        const s = new Date(`${v.date_visite}T${v.heure_sortie}`);
+        if (s > e) { totalMin += (s - e) / 60000; nb++; }
+      }
+    });
+    document.getElementById('moyenneDuree').textContent = nb ? Math.round(totalMin / nb) : 0;
+
+    // Taux occupation
+    const today = new Date().toISOString().split('T')[0];
+    const todayV = visiteurs.filter(v => v.date_visite === today);
+    const presents = todayV.filter(v => !v.heure_sortie).length;
+    const taux = todayV.length ? Math.round((presents / todayV.length) * 100) : 0;
+    document.getElementById('tauxOccupation').textContent = taux + '%';
+
+    // Construire les charts
+    buildChartMensuel(visiteurs);
+    buildChartDirection(visiteurs);
+    buildChartHebdo(visiteurs);
+    buildChartPoints(visiteurs);
+
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// ── Charts ──
+function buildChartMensuel(visiteurs) {
+  const canvas = document.getElementById('chartMensuel'); if(!canvas) return;
+  if (chartMensuel) chartMensuel.destroy();
+  const now = new Date();
+  const monthly = Array(12).fill(0);
+  visiteurs.forEach(v => {
+    if (v.date_visite) {
+      const d = new Date(v.date_visite);
+      if (d.getFullYear() === now.getFullYear()) monthly[d.getMonth()]++;
+    }
+  });
+  chartMensuel = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: [t('mois_jan'),t('mois_fev'),t('mois_mar'),t('mois_avr'),t('mois_mai'),t('mois_juin'),t('mois_juil'),t('mois_aou'),t('mois_sep'),t('mois_oct'),t('mois_nov'),t('mois_dec')],
+      datasets: [{ label:'Visiteurs', data:monthly, borderColor:'#1671d9', backgroundColor:'rgba(22,113,217,0.07)', fill:true, tension:.4, pointBackgroundColor:'#1671d9', pointRadius:4, borderWidth:2 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, animation:{duration:0}, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}, x:{grid:{color:'rgba(0,0,0,0.04)'}}} }
+  });
+}
+
+function buildChartDirection(visiteurs) {
+  const canvas = document.getElementById('chartDirection'); if(!canvas) return;
+  if (chartDirection) chartDirection.destroy();
+  const dirCount = {};
+  visiteurs.forEach(v => { const d = v.direction || 'Autre'; dirCount[d] = (dirCount[d]||0) + 1; });
+  chartDirection = new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(dirCount),
+      datasets: [{ data:Object.values(dirCount), backgroundColor:['#1671d9','#0d9e8e','#d97706','#dc2626','#6c47d6','#94a3b8'], borderWidth:2 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, animation:{duration:0}, cutout:'60%', plugins:{legend:{position:'bottom', labels:{font:{size:11}, padding:10, boxWidth:12}}} }
+  });
+}
+
+function buildChartHebdo(visiteurs) {
+  const canvas = document.getElementById('chartHebdo'); if(!canvas) return;
+  if (chartHebdo) chartHebdo.destroy();
+  const wcount = [0,0,0,0,0,0,0];
+  visiteurs.forEach(v => {
+    if (v.date_visite) {
+      const d = new Date(v.date_visite);
+      let w = d.getDay();
+      wcount[w === 0 ? 6 : w - 1]++;
+    }
+  });
+  chartHebdo = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: [t('jour_lun'),t('jour_mar'),t('jour_mer'),t('jour_jeu'),t('jour_ven'),t('jour_sam'),t('jour_dim')],
+      datasets: [{ label:'Visites', data:wcount, backgroundColor:'rgba(13,158,142,0.7)', borderRadius:6 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, animation:{duration:0}, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}, x:{grid:{display:false}}} }
+  });
+}
+
+function buildChartPoints(visiteurs) {
+  const canvas = document.getElementById('chartPoints'); if(!canvas) return;
+  if (chartPoints) chartPoints.destroy();
+  const labels = [], data = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const ds = d.toISOString().split('T')[0];
+    labels.push(d.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric'}));
+    data.push(visiteurs.filter(v => v.date_visite === ds && !v.heure_sortie).length);
+  }
+  chartPoints = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{ label:'Présents', data, borderColor:'#d97706', backgroundColor:'rgba(217,119,6,0.08)', fill:true, tension:.4, pointBackgroundColor:'#d97706', pointRadius:4, borderWidth:2 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, animation:{duration:0}, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}, x:{grid:{color:'rgba(0,0,0,0.04)'}}} }
+  });
+}
+
+// ── Initialisation ──
+async function init() {
+  if (!checkAuth()) return;       // 1. Auth
+  initSidebarUser();              // 2. Sidebar user
+  applyTranslations();            // 3. Langue
+  initNotifications(apiRequest); // 4. Notifications
+  await chargerDonnees();        // 5. Données
+}
+
+init();
+</script>
+</body>
+</html>

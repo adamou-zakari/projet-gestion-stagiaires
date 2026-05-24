@@ -1,459 +1,540 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Stagiaires</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
-        .page-header h2 { font-size:1.5rem; font-weight:600; color:white; }
-        .btn-primary { background:linear-gradient(135deg,#06b6d4,#0891b2); color:white; border:none; padding:12px 24px; border-radius:12px; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:10px; transition:all 0.2s; }
-        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(6,182,212,0.3); }
-        .footer-buttons { display:flex; justify-content:center; margin-top:30px; margin-bottom:20px; }
-        .btn-back { background:rgba(148,163,184,0.2); color:#cbd5e1; border:1px solid rgba(148,163,184,0.3); padding:12px 28px; border-radius:12px; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:10px; transition:all 0.2s; font-size:14px; }
-        .btn-back:hover { background:rgba(148,163,184,0.3); transform:translateY(-2px); color:white; }
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:1000; justify-content:center; align-items:center; }
-        .modal-content { background:linear-gradient(135deg,#1e293b,#0f172a); border-radius:28px; padding:32px; width:90%; max-width:540px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); max-height:90vh; overflow-y:auto; }
-        .modal-content h3 { font-size:1.5rem; font-weight:600; margin-bottom:24px; color:white; display:flex; align-items:center; gap:10px; justify-content:center; }
-        .modal-content h3 i { color:#06b6d4; }
-        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
-        .form-group { margin-bottom:18px; }
-        .form-group label { display:block; margin-bottom:8px; font-weight:500; color:rgba(255,255,255,0.7); font-size:13px; }
-        .form-group label i { margin-right:6px; color:#06b6d4; }
-        .form-group input, .form-group select { width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:white; font-size:14px; font-family:'Outfit',sans-serif; box-sizing:border-box; }
-        .form-group input:focus, .form-group select:focus { outline:none; border-color:#06b6d4; background:rgba(255,255,255,0.08); }
-        .form-group select option { background:#1e293b; }
-        .btn-submit { background:linear-gradient(135deg,#06b6d4,#0891b2); color:white; border:none; padding:14px; border-radius:14px; cursor:pointer; font-weight:600; width:100%; font-size:15px; margin-top:8px; display:flex; align-items:center; justify-content:center; gap:8px; }
-        .btn-cancel { background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.15); padding:12px; border-radius:12px; cursor:pointer; width:100%; margin-top:12px; }
-        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:30px; }
-        .stat-card { background:rgba(255,255,255,0.04); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.08); border-radius:24px; padding:24px; text-align:center; }
-        .stat-card i { font-size:36px; margin-bottom:12px; display:inline-block; }
-        .stat-card h3 { font-size:14px; font-weight:500; color:rgba(255,255,255,0.6); margin-bottom:8px; }
-        .stat-card .number { font-size:32px; font-weight:700; color:white; }
-        .search-input { padding:10px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:white; width:250px; margin-right:10px; }
-        .btn-refresh { background:rgba(6,182,212,0.2); border:1px solid rgba(6,182,212,0.3); color:#06b6d4; padding:10px 16px; border-radius:12px; cursor:pointer; }
-        .btn-edit { background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#60a5fa; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
-        .btn-delete { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
-        .toast { position:fixed; bottom:28px; right:28px; color:#fff; padding:14px 22px; border-radius:14px; font-weight:600; font-size:14px; z-index:9999; animation:toastIn 0.3s ease; box-shadow:0 6px 20px rgba(0,0,0,0.45); display:flex; align-items:center; gap:10px; }
-        .toast.success { background:linear-gradient(135deg,#10b981,#059669); }
-        .toast.error   { background:linear-gradient(135deg,#ef4444,#dc2626); }
-        @keyframes toastIn { from { transform:translateX(110%); opacity:0; } to { transform:translateX(0); opacity:1; } }
-        @media (max-width:768px) { .stats-grid { grid-template-columns:repeat(2,1fr); } .form-row { grid-template-columns:1fr; } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stagiaires — ANSI</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.stat-card { background:var(--surface); border-radius:24px; padding:20px 18px; border:1px solid var(--border); box-shadow:var(--shadow-sm); position:relative; overflow:hidden; transition:transform .25s,box-shadow .25s; }
+.stat-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
+.stat-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; transform:scaleX(0); transform-origin:left; transition:transform .3s; }
+.stat-card:hover::after { transform:scaleX(1); }
+.stat-card:nth-child(1)::after { background:linear-gradient(90deg,#1671d9,#3b9eff); }
+.stat-card:nth-child(2)::after { background:linear-gradient(90deg,#0d9e8e,#2dd4bf); }
+.stat-card:nth-child(3)::after { background:linear-gradient(90deg,#d97706,#fbbf24); }
+.stat-card:nth-child(4)::after { background:linear-gradient(90deg,#6c47d6,#a78bfa); }
+.stat-icon { width:48px; height:48px; border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:16px; }
+.stat-card:nth-child(1) .stat-icon { background:rgba(22,113,217,0.12); color:#1671d9; }
+.stat-card:nth-child(2) .stat-icon { background:rgba(13,158,142,0.12); color:#0d9e8e; }
+.stat-card:nth-child(3) .stat-icon { background:rgba(217,119,6,0.12); color:#d97706; }
+.stat-card:nth-child(4) .stat-icon { background:rgba(108,71,214,0.12); color:#6c47d6; }
+.stat-label  { font-size:11px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+.stat-number { font-family:'Space Grotesk',sans-serif; font-size:34px; font-weight:800; color:var(--text-1); line-height:1.1; letter-spacing:-1px; }
+.stat-sub    { font-size:11px; color:var(--text-3); margin-top:8px; font-weight:500; }
+
+.search-wrapper { position:relative; display:inline-flex; align-items:center; }
+.search-input-r { background:var(--surface-2); border:1.5px solid var(--border); border-radius:48px; padding:8px 36px 8px 40px; font-size:13px; width:260px; outline:none; transition:all .25s; font-family:inherit; color:var(--text-1); }
+.search-input-r:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(22,113,217,0.15); background:var(--surface); }
+.search-icon-r { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-3); font-size:14px; pointer-events:none; }
+.btn-clear-r { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-3); cursor:pointer; font-size:12px; padding:4px; border-radius:50%; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; transition:all .2s; }
+.btn-clear-r:hover { background:rgba(220,38,38,0.12); color:var(--red); }
+
+.data-table { width:100%; border-collapse:collapse; font-size:13px; min-width:800px; }
+.data-table th,.data-table td { padding:12px 14px; text-align:left; border-bottom:1px solid var(--surface-2); vertical-align:middle; white-space:nowrap; }
+.data-table th { background:var(--surface-2); font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-3); letter-spacing:.5px; }
+.data-table tbody tr:hover td { background:rgba(22,113,217,0.03); }
+
+.badge-present { background:rgba(13,158,142,0.1); color:#0a7a6e; padding:4px 10px; border-radius:30px; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:5px; }
+.badge-present::before { content:''; width:6px; height:6px; border-radius:50%; background:#0d9e8e; animation:pulse 1.8s infinite; }
+.badge-absent  { background:rgba(220,38,38,0.08); color:var(--red); padding:4px 10px; border-radius:30px; font-size:11px; font-weight:600; }
+.badge-termine { background:var(--surface-2); color:var(--text-3); padding:4px 10px; border-radius:30px; font-size:11px; font-weight:600; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(13,158,142,0.4)} 50%{box-shadow:0 0 0 5px rgba(13,158,142,0)} }
+
+.btn-edit   { border:none; border-radius:30px; padding:5px 12px; font-size:12px; font-weight:600; cursor:pointer; transition:.15s; display:inline-flex; align-items:center; gap:5px; font-family:inherit; background:rgba(22,113,217,0.1); color:var(--blue); }
+.btn-delete { border:none; border-radius:30px; padding:5px 12px; font-size:12px; font-weight:600; cursor:pointer; transition:.15s; display:inline-flex; align-items:center; gap:5px; font-family:inherit; background:rgba(220,38,38,0.1); color:var(--red); }
+.btn-edit:hover   { background:rgba(22,113,217,0.2); transform:translateY(-1px); }
+.btn-delete:hover { background:rgba(220,38,38,0.18); transform:translateY(-1px); }
+
+.pagination { display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:20px; flex-wrap:wrap; }
+.pagination button { background:var(--surface); border:1px solid var(--border); border-radius:30px; padding:6px 12px; font-size:12px; font-weight:500; cursor:pointer; transition:all .15s; color:var(--text-2); font-family:inherit; }
+.pagination button:hover:not(:disabled) { background:var(--blue-dim); border-color:var(--blue); color:var(--blue); }
+.pagination button:disabled { opacity:.4; cursor:not-allowed; }
+.pagination .page-active { background:var(--blue); border-color:var(--blue); color:#fff; }
+.pagination select { background:var(--surface); border:1px solid var(--border); border-radius:30px; padding:6px 10px; font-size:12px; font-weight:500; color:var(--text-1); outline:none; cursor:pointer; font-family:inherit; }
+
+@media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.stats-grid{grid-template-columns:1fr}.table-header-row{flex-direction:column;align-items:stretch}.search-input-r{width:100%}}
+
+/* ── Modales compactes sans défilement ── */
+.modal { display:none; position:fixed; inset:0; background:rgba(10,37,64,0.55); backdrop-filter:blur(6px); z-index:1000; align-items:center; justify-content:center; padding:6px; }
+.modal-content { background:var(--surface); border-radius:18px; width:100%; max-width:560px; max-height:99vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,0.25); }
+.modal-header { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.modal-header h3 { font-size:14px; font-weight:700; color:var(--text-1); margin:0; }
+.modal-header p  { font-size:11px; color:var(--text-3); margin:1px 0 0; }
+.modal-icon-wrap { width:32px; height:32px; border-radius:10px; background:linear-gradient(135deg,#1671d9,#3b9eff); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; flex-shrink:0; }
+.modal-body { padding:8px 14px; overflow:hidden; flex:1; display:flex; flex-direction:column; gap:6px; }
+.form-section { display:flex; flex-direction:column; gap:4px; }
+.form-section-title { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-3); padding-bottom:3px; border-bottom:1px solid var(--surface-2); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.form-group { display:flex; flex-direction:column; gap:2px; }
+.form-group label { font-size:11px; font-weight:600; color:var(--text-2); }
+.form-group input, .form-group select { padding:5px 8px; border:1.5px solid var(--border); border-radius:7px; font-size:12px; background:var(--surface-2); color:var(--text-1); outline:none; font-family:inherit; transition:border-color .2s; }
+.form-group input:focus, .form-group select:focus { border-color:var(--blue); background:var(--surface); }
+.modal-footer { display:flex; gap:8px; justify-content:flex-end; padding:8px 14px; border-top:1px solid var(--border); flex-shrink:0; }
+.btn-submit { background:linear-gradient(135deg,#1671d9,#3b9eff); color:#fff; border:none; padding:8px 16px; border-radius:30px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; font-family:inherit; }
+.btn-cancel { background:var(--surface-2); color:var(--text-2); border:1px solid var(--border); padding:8px 16px; border-radius:30px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; }
+</style>
 </head>
 <body>
-<div class="dashboard-container">
 
-    <!-- TOP BAR -->
-    <div class="top-bar">
-        <div class="top-bar-left">
-            <img src="logo.png" alt="Logo ANSI" class="ansi-logo" onerror="this.style.display='none'">
-            <h1>Gestion des Stagiaires</h1>
-        </div>
-        <div class="user-info">
-            <span class="role-badge" id="roleBadge"></span>
-            <i class="fas fa-user-circle"></i>
-            <span id="userName"></span>
-            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
-        </div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><img src="logo.png" alt="ANSI" onerror="this.style.display='none'"></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label" data-i18n="principal">Principal</div>
+    <a class="sidebar-link"  href="dashboard.html"><i class="fas fa-th-large"></i><span data-i18n="tableau_bord">Tableau de bord</span></a>
+    <a class="sidebar-link active" id="btnStagiaires" href="stagiaires.html"><i class="fas fa-user-graduate"></i><span data-i18n="stagiaires">Stagiaires</span></a>
+    <a class="sidebar-link"  href="visiteurs.html"><i class="fas fa-users"></i><span data-i18n="visiteurs">Visiteurs</span></a>
+    <a class="sidebar-link" id="btnEmployes" href="employes.html"><i class="fas fa-id-badge"></i><span data-i18n="employes">Employés</span></a>
+    <a class="sidebar-link" id="btnSecurite" href="securite.html"><i class="fas fa-shield-alt"></i><span data-i18n="agents_securite">Agents de sécurité</span></a>
+    <a class="sidebar-link"  href="accueil-agent.html"><i class="fas fa-clipboard-check"></i><span data-i18n="pointage_stagiaires">Pointage stagiaires</span></a>
+    <div class="nav-section-label" data-i18n="donnees">Données</div>
+    <a class="sidebar-link"  href="historique.html"><i class="fas fa-history"></i><span data-i18n="historique">Historique</span></a>
+    <a class="sidebar-link"  href="rapports.html"><i class="fas fa-chart-bar"></i><span data-i18n="rapports">Rapports</span></a>
+    <div class="nav-section-label" data-i18n="systeme">Système</div>
+    <a class="sidebar-link"  href="parametres.html"><i class="fas fa-cog"></i><span data-i18n="parametres">Paramètres</span></a>
+    <a class="sidebar-link"  href="profil.html"><i class="fas fa-user-edit"></i><span data-i18n="mon_profil">Mon profil</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user" onclick="window.location.href='profil.html'">
+      <div class="sidebar-avatar" id="sidebarInitials">--</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">—</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">—</div>
+      </div>
+      <i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.25);font-size:10px"></i>
     </div>
+    <button class="sb-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span data-i18n="deconnexion">Déconnexion</span></button>
+  </div>
+</aside>
 
-    <!-- EN-TÊTE -->
+<div class="main-wrapper" id="mainWrapper">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <span class="topbar-title" data-i18n="gestion_stagiaires">Gestion des stagiaires</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn" onclick="window.showNotificationsModal && window.showNotificationsModal()">
+        <i class="fas fa-bell"></i><span class="notif-badge hidden">0</span>
+      </button>
+      <button class="topbar-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
+    </div>
+  </header>
+
+  <main class="main-content">
     <div class="page-header">
-        <h2><i class="fas fa-user-graduate"></i> Liste des stagiaires</h2>
-        <button class="btn-primary" onclick="openAddModal()">
-            <i class="fas fa-plus-circle"></i> Nouveau stagiaire
-        </button>
+      <h2><i class="fas fa-user-graduate"></i> <span data-i18n="liste_stagiaires">Liste des stagiaires</span></h2>
+      <button class="btn-primary" onclick="openAddModal()"><i class="fas fa-plus-circle"></i> <span data-i18n="nouveau_stagiaire">Nouveau stagiaire</span></button>
     </div>
 
-    <!-- STATS -->
+    <!-- Stats -->
     <div class="stats-grid">
-        <div class="stat-card"><i class="fas fa-user-graduate" style="color:#3b82f6;"></i><h3>TOTAL STAGIAIRES</h3><div class="number" id="totalStagiaires">0</div></div>
-        <div class="stat-card"><i class="fas fa-check-circle" style="color:#10b981;"></i><h3>PRÉSENTS</h3><div class="number" id="stagiairesActifs">0</div></div>
-        <div class="stat-card"><i class="fas fa-clock" style="color:#f59e0b;"></i><h3>EN STAGE</h3><div class="number" id="stagiairesEnStage">0</div></div>
-        <div class="stat-card"><i class="fas fa-chart-line" style="color:#8b5cf6;"></i><h3>TERMINÉS</h3><div class="number" id="stagiairesTermines">0</div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-graduate"></i></div><div class="stat-label" data-i18n="total_stagiaires">Total stagiaires</div><div class="stat-number" id="nbTotal">0</div><div class="stat-sub" data-i18n="total_enregistres">Total enregistrés</div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-label" data-i18n="presents">Présents</div><div class="stat-number" id="nbPresents">0</div><div class="stat-sub" data-i18n="en_ce_moment">En ce moment</div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-label" data-i18n="en_stage">En stage</div><div class="stat-number" id="nbEnStage">0</div><div class="stat-sub" data-i18n="actif">Stage en cours</div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-label" data-i18n="termines">Terminés</div><div class="stat-number" id="nbTermines">0</div><div class="stat-sub" data-i18n="termine">Stage achevé</div></div>
     </div>
 
-    <!-- TABLEAU -->
+    <!-- Table -->
     <div class="table-container">
-        <div class="table-header-row">
-            <h3><i class="fas fa-list"></i> Liste des stagiaires</h3>
-            <div>
-                <input type="text" class="search-input" id="searchStagiaire" placeholder="Rechercher..." onkeyup="filterStagiaires()">
-                <button class="btn-refresh" onclick="loadStagiaires()"><i class="fas fa-sync-alt"></i> Actualiser</button>
-            </div>
+      <div class="table-header-row">
+        <h3><i class="fas fa-list"></i> <span data-i18n="detail_stagiaires">Détail des stagiaires</span></h3>
+        <div style="display:flex;align-items:center;background:var(--surface);border:1.5px solid var(--border);border-radius:40px;padding:6px 14px;gap:8px;transition:border-color .2s;box-shadow:var(--shadow-sm);" onfocusin="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 3px rgba(22,113,217,0.1)'" onfocusout="this.style.borderColor='var(--border)';this.style.boxShadow='var(--shadow-sm)'">
+          <i class="fas fa-search" style="color:var(--text-3);font-size:13px;flex-shrink:0"></i>
+          <select id="searchField" onchange="applySearch()" style="appearance:none;-webkit-appearance:none;-moz-appearance:none;background:transparent;border:none;border-right:1.5px solid var(--border);font-size:12px;font-weight:600;color:var(--text-1);outline:none;font-family:inherit;cursor:pointer;padding:0 10px 0 0;margin-right:4px;flex-shrink:0;">
+            <option value="nom_prenom" data-i18n="nom_prenom">Nom & Prénom</option>
+            <option value="email" data-i18n="email">Email</option>
+            <option value="direction" data-i18n="direction_stage">Direction</option>
+            <option value="telephone" data-i18n="telephone">Téléphone</option>
+          </select>
+          <input type="text" id="searchInput" placeholder="Rechercher..." data-i18n-placeholder="rechercher" autocomplete="off" style="border:none;outline:none;font-size:13px;background:transparent;color:var(--text-1);font-family:inherit;flex:1;min-width:120px;">
+          <button onclick="clearSearch()" style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:12px;padding:0;display:flex;align-items:center;"><i class="fas fa-times"></i></button>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>NOM & PRÉNOM</th>
-                    <th>EMAIL</th>
-                    <th>DIRECTION DE STAGE</th><!-- ✅ AJOUTÉ -->
-                    <th>TÉLÉPHONE</th>
-                    <th>DATE DÉBUT</th>
-                    <th>DATE FIN</th>
-                    <th>STATUT</th>
-                    <th>ACTIONS</th>
-                </tr>
-            </thead>
-            <tbody id="stagiairesTableBody"></tbody>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th data-i18n="nom_prenom">NOM & PRÉNOM</th>
+              <th data-i18n="email">EMAIL</th>
+              <th data-i18n="direction_stage">DIRECTION</th>
+              <th data-i18n="telephone">TÉLÉPHONE</th>
+              <th data-i18n="date_debut">DATE DÉBUT</th>
+              <th data-i18n="date_fin">DATE FIN</th>
+              <th data-i18n="statut">STATUT</th>
+              <th data-i18n="actions">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
         </table>
+      </div>
+      <div class="pagination" id="pagination">
+        <button id="btnPrev" onclick="changePage(currentPage-1)" disabled>‹ Précédent</button>
+        <div id="pageNumbers" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        <button id="btnNext" onclick="changePage(currentPage+1)" disabled>Suivant ›</button>
+        <select id="perPage" onchange="changePerPage()">
+          <option value="10">10 par page</option>
+          <option value="25">25 par page</option>
+          <option value="50">50 par page</option>
+        </select>
+      </div>
     </div>
 
     <div class="footer-buttons">
-        <button class="btn-back" onclick="window.location.href='dashboard.html'">
-            <i class="fas fa-arrow-left"></i> Retour au Dashboard
-        </button>
+      <button class="btn-back" onclick="window.location.href='dashboard.html'"><i class="fas fa-arrow-left"></i> <span data-i18n="retour_dashboard">Retour au Dashboard</span></button>
     </div>
+  </main>
+
+  <footer class="page-footer">
+    <span>© 2026 ANSI — <span data-i18n="footer_droits">Tous droits réservés.</span></span>
+    <span>Version 1.0.0 · <span data-i18n="footer_version">Système de gestion des entrées/sorties</span></span>
+  </footer>
 </div>
 
-<!-- ══════════════════════════════════════════════════ -->
-<!-- MODAL AJOUTER                                      -->
-<!-- ══════════════════════════════════════════════════ -->
+<!-- MODAL AJOUTER -->
 <div id="modalAdd" class="modal">
-    <div class="modal-content">
-        <h3><i class="fas fa-user-graduate"></i> Ajouter un stagiaire</h3>
-        <div class="form-row">
-            <div class="form-group">
-                <label><i class="fas fa-user"></i> Nom *</label>
-                <input type="text" id="addNom" placeholder="Nom">
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-user"></i> Prénom *</label>
-                <input type="text" id="addPrenom" placeholder="Prénom">
-            </div>
-        </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label><i class="fas fa-envelope"></i> Email</label>
-                <input type="email" id="addEmail" placeholder="email@exemple.com">
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-phone"></i> Téléphone</label>
-                <input type="tel" id="addTelephone" placeholder="06 XX XX XX XX">
-            </div>
-        </div>
-        <!-- ✅ DIRECTION -->
-        <div class="form-group">
-            <label><i class="fas fa-building"></i> Direction de stage</label>
-            <select id="addDirection">
-                <option value="">-- Sélectionner une direction --</option>
-            </select>
-        </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label><i class="fas fa-calendar-alt"></i> Date début</label>
-                <input type="date" id="addDateDebut">
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-calendar-check"></i> Date fin</label>
-                <input type="date" id="addDateFin">
-            </div>
-        </div>
-        <button class="btn-submit" onclick="ajouterStagiaire()">
-            <i class="fas fa-save"></i> Enregistrer
-        </button>
-        <button class="btn-cancel" onclick="closeAddModal()">Annuler</button>
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-icon-wrap"><i class="fas fa-user-graduate"></i></div>
+      <div><h3 data-i18n="nouveau_stagiaire">Ajouter un stagiaire</h3><p data-i18n="remplir_infos">Remplissez les informations ci-dessous</p></div>
     </div>
+    <div class="modal-body">
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="identite">Identité</div>
+        <div class="form-row">
+          <div class="form-group"><label data-i18n="nom">Nom *</label><input type="text" id="addNom"></div>
+          <div class="form-group"><label data-i18n="prenom">Prénom *</label><input type="text" id="addPrenom"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="contact">Contact</div>
+        <div class="form-row">
+          <div class="form-group"><label data-i18n="email">Email</label><input type="email" id="addEmail"></div>
+          <div class="form-group"><label data-i18n="telephone">Téléphone</label><input type="tel" id="addTel" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="stage">Stage</div>
+        <div class="form-group"><label data-i18n="direction_stage">Direction de stage</label><select id="addDirection"></select></div>
+        <div class="form-row" style="margin-top:12px">
+          <div class="form-group"><label data-i18n="date_debut">Date début</label><input type="date" id="addDebut"></div>
+          <div class="form-group"><label data-i18n="date_fin">Date fin</label><input type="date" id="addFin"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-submit" onclick="ajouterStagiaire()"><i class="fas fa-save"></i> <span data-i18n="enregistrer">Enregistrer</span></button>
+      <button class="btn-cancel" onclick="closeModal('modalAdd')" data-i18n="annuler">Annuler</button>
+    </div>
+  </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════ -->
-<!-- MODAL MODIFIER                                     -->
-<!-- ══════════════════════════════════════════════════ -->
+<!-- MODAL MODIFIER -->
 <div id="modalEdit" class="modal">
-    <div class="modal-content">
-        <h3><i class="fas fa-edit"></i> Modifier le stagiaire</h3>
-        <input type="hidden" id="editId">
-        <div class="form-row">
-            <div class="form-group">
-                <label><i class="fas fa-user"></i> Nom *</label>
-                <input type="text" id="editNom" placeholder="Nom">
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-user"></i> Prénom *</label>
-                <input type="text" id="editPrenom" placeholder="Prénom">
-            </div>
-        </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label><i class="fas fa-envelope"></i> Email</label>
-                <input type="email" id="editEmail" placeholder="email@exemple.com">
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-phone"></i> Téléphone</label>
-                <input type="tel" id="editTelephone" placeholder="06 XX XX XX XX">
-            </div>
-        </div>
-        <!-- ✅ DIRECTION -->
-        <div class="form-group">
-            <label><i class="fas fa-building"></i> Direction de stage</label>
-            <select id="editDirection">
-                <option value="">-- Sélectionner une direction --</option>
-            </select>
-        </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label><i class="fas fa-calendar-alt"></i> Date début</label>
-                <input type="date" id="editDateDebut">
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-calendar-check"></i> Date fin</label>
-                <input type="date" id="editDateFin">
-            </div>
-        </div>
-        <button class="btn-submit" onclick="sauvegarderModification()">
-            <i class="fas fa-save"></i> Enregistrer les modifications
-        </button>
-        <button class="btn-cancel" onclick="closeEditModal()">Annuler</button>
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-icon-wrap" style="background:linear-gradient(135deg,#0d9e8e,#2dd4bf)"><i class="fas fa-pen"></i></div>
+      <div><h3 data-i18n="modifier">Modifier le stagiaire</h3><p data-i18n="mettre_a_jour">Mettez à jour les informations</p></div>
     </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="identite">Identité</div>
+        <div class="form-row">
+          <div class="form-group"><label data-i18n="nom">Nom *</label><input type="text" id="editNom"></div>
+          <div class="form-group"><label data-i18n="prenom">Prénom *</label><input type="text" id="editPrenom"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="contact">Contact</div>
+        <div class="form-row">
+          <div class="form-group"><label data-i18n="email">Email</label><input type="email" id="editEmail"></div>
+          <div class="form-group"><label data-i18n="telephone">Téléphone</label><input type="tel" id="editTel" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="stage">Stage</div>
+        <div class="form-group"><label data-i18n="direction_stage">Direction de stage</label><select id="editDirection"></select></div>
+        <div class="form-row" style="margin-top:12px">
+          <div class="form-group"><label data-i18n="date_debut">Date début</label><input type="date" id="editDebut"></div>
+          <div class="form-group"><label data-i18n="date_fin">Date fin</label><input type="date" id="editFin"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-submit" onclick="modifierStagiaire()"><i class="fas fa-save"></i> <span data-i18n="enregistrer">Enregistrer</span></button>
+      <button class="btn-cancel" onclick="closeModal('modalEdit')" data-i18n="annuler">Annuler</button>
+    </div>
+  </div>
 </div>
 
 <script src="script.js"></script>
+<script src="notifications.js"></script>
+<script src="lang.js"></script>
 <script>
-    let stagiairesList = [];
-    let directionsList = [];
+// ── Variables ──
+let stagiairesList = [], directionsList = [], filteredList = [];
+let currentPage = 1, itemsPerPage = 10;
 
-    // ── Directions ───────────────────────────────────────
-    async function loadDirections() {
-        try {
-            const res = await apiRequest('http://localhost:3000/api/directions');
-            if (res.ok) {
-                directionsList = await res.json();
-                populateDirectionSelect('addDirection');
-                populateDirectionSelect('editDirection');
-            }
-        } catch (e) { console.error('Erreur directions:', e); }
+// ── Utilitaires ──
+function fmt(d) { if(!d) return '-'; const dt=new Date(d); return isNaN(dt)?d:dt.toLocaleDateString('fr-FR'); }
+function estActif(s) { if(!s.date_fin) return true; return new Date(s.date_fin) >= new Date().setHours(0,0,0,0); }
+
+// ── Notification locale (toast cloche + liste + badge) ──
+function notifLocale(msg, type = 'action') {
+  if (typeof window.addNotification === 'function') {
+    window.addNotification({ type, message: msg });
+  } else if (typeof window.showNotifToast === 'function') {
+    window.showNotifToast(msg);
+  }
+}
+
+// ── Modales ──
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+document.querySelectorAll('.modal').forEach(m => {
+  m.addEventListener('click', e => { if(e.target === m) m.style.display = 'none'; });
+});
+
+// ── Directions ──
+async function chargerDirections() {
+  try {
+    const res = await apiRequest('http://localhost:3000/api/directions');
+    directionsList = await res.json();
+    remplirSelectDirection('addDirection');
+    remplirSelectDirection('editDirection');
+  } catch(e) { console.error(e); }
+}
+function remplirSelectDirection(selectId, selectedId = '') {
+  const s = document.getElementById(selectId); if(!s) return;
+  s.innerHTML = '<option value="">-- Sélectionner --</option>';
+  directionsList.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d.id; o.textContent = d.nom;
+    if (String(d.id) === String(selectedId)) o.selected = true;
+    s.appendChild(o);
+  });
+}
+
+// ── Recherche & pagination ──
+function applySearch() {
+  const q     = document.getElementById('searchInput').value.trim().toLowerCase();
+  const field = document.getElementById('searchField').value;
+  filteredList = q === '' ? [...stagiairesList] : stagiairesList.filter(s => {
+    if (field === 'nom_prenom') {
+      return (s.prenom||'').toLowerCase().includes(q) || (s.nom||'').toLowerCase().includes(q);
     }
-
-    function populateDirectionSelect(selectId, selectedId = '') {
-        const select = document.getElementById(selectId);
-        if (!select) return;
-        select.innerHTML = '<option value="">-- Sélectionner une direction --</option>';
-        directionsList.forEach(d => {
-            const opt = document.createElement('option');
-            opt.value = d.id;
-            opt.textContent = d.nom;
-            if (String(d.id) === String(selectedId)) opt.selected = true;
-            select.appendChild(opt);
-        });
+    const val = field === 'direction' ? (s.direction||'') :
+                field === 'email'     ? (s.email||'') :
+                field === 'telephone' ? (s.telephone||'') : '';
+    return val.toLowerCase().includes(q);
+  });
+  filteredList.sort((a, b) => {
+    if (field === 'nom_prenom') {
+      const pa = (a.prenom||'').toLowerCase(), pb = (b.prenom||'').toLowerCase();
+      if (q) {
+        const aS = pa.startsWith(q) || (a.nom||'').toLowerCase().startsWith(q) ? 0 : 1;
+        const bS = pb.startsWith(q) || (b.nom||'').toLowerCase().startsWith(q) ? 0 : 1;
+        if (aS !== bS) return aS - bS;
+      }
+      const c = pa.localeCompare(pb);
+      return c !== 0 ? c : (a.nom||'').toLowerCase().localeCompare((b.nom||'').toLowerCase());
     }
-
-    // ── Utilitaires ──────────────────────────────────────
-    function estActif(stagiaire) {
-        if (!stagiaire.date_fin) return true;
-        const today = new Date(); today.setHours(0,0,0,0);
-        const dateFin = new Date(stagiaire.date_fin); dateFin.setHours(0,0,0,0);
-        return dateFin >= today;
+    const va = (a[field]||'').toLowerCase(), vb = (b[field]||'').toLowerCase();
+    if (q) {
+      const aS = va.startsWith(q) ? 0 : 1, bS = vb.startsWith(q) ? 0 : 1;
+      if (aS !== bS) return aS - bS;
     }
+    return va.localeCompare(vb);
+  });
+  currentPage = 1;
+  renderTable();
+  renderPagination();
+}
+function clearSearch() { document.getElementById('searchInput').value = ''; applySearch(); }
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(applySearch, 300);
+});
 
-    function formatDate(dateStr) {
-        if (!dateStr) return '-';
-        const d = new Date(dateStr);
-        if (isNaN(d)) return dateStr;
-        return d.toLocaleDateString('fr-FR');
-    }
+function changePage(p) {
+  const total = Math.ceil(filteredList.length / itemsPerPage);
+  if (p < 1 || p > total) return;
+  currentPage = p; renderTable(); renderPagination();
+}
+function changePerPage() {
+  itemsPerPage = parseInt(document.getElementById('perPage').value);
+  currentPage = 1; renderTable(); renderPagination();
+}
 
-    function showToast(message, type = 'success') {
-        document.querySelectorAll('.toast').forEach(t => t.remove());
-        const t = document.createElement('div');
-        t.className = `toast ${type}`;
-        t.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'times-circle'}"></i> ${message}`;
-        document.body.appendChild(t);
-        setTimeout(() => t.remove(), 3500);
-    }
+// ── Rendu tableau ──
+function renderTable() {
+  const start = (currentPage-1) * itemsPerPage;
+  const items = filteredList.slice(start, start + itemsPerPage);
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  if (!items.length) {
+    const r = tbody.insertRow(); const c = r.insertCell(0);
+    c.colSpan = 8; c.textContent = t('aucun_stagiaire');
+    c.style.cssText = 'text-align:center;padding:36px;color:#94a3b8';
+    return;
+  }
+  items.forEach(s => {
+    const actif = estActif(s);
+    let badge = '';
+    if (!actif)             badge = `<span class="badge-termine">${t('termine')}</span>`;
+    else if (s.est_present) badge = `<span class="badge-present">${t('presents')}</span>`;
+    else                    badge = `<span class="badge-absent">${t('absent')}</span>`;
+    const r = tbody.insertRow();
+    r.insertCell(0).innerHTML = `<strong>${s.prenom||''} ${s.nom||''}</strong>`;
+    r.insertCell(1).textContent = s.email || '-';
+    r.insertCell(2).textContent = s.direction || '-';
+    r.insertCell(3).textContent = s.telephone || '-';
+    r.insertCell(4).textContent = fmt(s.date_debut);
+    r.insertCell(5).textContent = fmt(s.date_fin);
+    r.insertCell(6).innerHTML = badge;
+    r.insertCell(7).innerHTML = `
+      <div class="td-actions">
+        <button class="btn-edit"   onclick="ouvrirModification(${s.id})"><i class="fas fa-pen"></i> ${t('modifier')}</button>
+        <button class="btn-delete" onclick="supprimerStagiaire(${s.id})"><i class="fas fa-trash"></i> ${t('supprimer')}</button>
+      </div>`;
+  });
+}
 
-    // ── Chargement ────────────────────────────────────────
-    async function loadStagiaires() {
-        try {
-            const res = await apiRequest('http://localhost:3000/api/stagiaires');
-            stagiairesList = await res.json();
-            stagiairesList = stagiairesList.map(s => ({ ...s, est_actif: estActif(s) }));
+function renderPagination() {
+  const total = Math.ceil(filteredList.length / itemsPerPage);
+  document.getElementById('btnPrev').disabled = currentPage === 1;
+  document.getElementById('btnNext').disabled = currentPage === total || total === 0;
+  const container = document.getElementById('pageNumbers');
+  container.innerHTML = '';
+  for (let i = 1; i <= total; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    if (i === currentPage) btn.classList.add('page-active');
+    btn.onclick = () => changePage(i);
+    container.appendChild(btn);
+  }
+}
 
-            const total    = stagiairesList.length;
-            const presents = stagiairesList.filter(s => (s.est_present === true || s.est_present === 1) && s.est_actif).length;
-            const actifs   = stagiairesList.filter(s => s.est_actif).length;
-            const termines = stagiairesList.filter(s => !s.est_actif).length;
+// ── CRUD ──
+function openAddModal() {
+  ['addNom','addPrenom','addEmail','addTel','addDebut','addFin'].forEach(id => document.getElementById(id).value = '');
+  remplirSelectDirection('addDirection');
+  openModal('modalAdd');
+}
 
-            document.getElementById('totalStagiaires').textContent = total;
-            document.getElementById('stagiairesActifs').textContent = presents;
-            document.getElementById('stagiairesEnStage').textContent = actifs;
-            document.getElementById('stagiairesTermines').textContent = termines;
+async function ajouterStagiaire() {
+  const nom        = document.getElementById('addNom').value.trim();
+  const prenom     = document.getElementById('addPrenom').value.trim();
+  const email      = document.getElementById('addEmail').value.trim();
+  const tel        = document.getElementById('addTel').value.trim();
+  const direction  = document.getElementById('addDirection').value;
+  const dateDebut  = document.getElementById('addDebut').value;
+  const dateFin    = document.getElementById('addFin').value;
 
-            renderStagiairesTable(stagiairesList);
-        } catch (err) { console.error(err); }
-    }
+  if (!nom || !prenom)   { notifWarn('⚠️ Nom et prénom sont requis'); return; }
+  if (!email)             { notifWarn('⚠️ L\'email est requis'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { notifWarn('⚠️ Email invalide'); return; }
+  if (!tel)               { notifWarn('⚠️ Le téléphone est requis'); return; }
+  if (!/^\d{6,15}$/.test(tel)) { notifWarn('⚠️ Téléphone invalide (6 à 15 chiffres)'); return; }
+  if (!direction)         { notifWarn('⚠️ Veuillez sélectionner une direction'); return; }
+  if (!dateDebut)         { notifWarn('⚠️ La date de début est requise'); return; }
+  if (!dateFin)           { notifWarn('⚠️ La date de fin est requise'); return; }
+  if (dateDebut > dateFin){ notifWarn('⚠️ La date de fin doit être après la date de début'); return; }
 
-    function renderStagiairesTable(stagiaires) {
-        const tbody = document.getElementById('stagiairesTableBody');
-        tbody.innerHTML = '';
-        if (stagiaires.length === 0) {
-            const row = tbody.insertRow();
-            const cell = row.insertCell(0);
-            cell.colSpan = 9;
-            cell.textContent = 'Aucun stagiaire';
-            cell.style.cssText = 'text-align:center;padding:40px;opacity:0.5';
-            return;
-        }
-        stagiaires.forEach(s => {
-            const row = tbody.insertRow();
-            const estActifFlag   = estActif(s);
-            const estPresentFlag = (s.est_present === true || s.est_present === 1);
+  const data = { nom, prenom, email, telephone: tel, direction_id: direction, date_debut: dateDebut, date_fin: dateFin };
+  try {
+    const res = await apiRequest('http://localhost:3000/api/stagiaires', { method:'POST', body:JSON.stringify(data) });
+    if (res.ok) { closeModal('modalAdd'); await chargerDonnees(); notifLocale(`Stagiaire ${prenom} ${nom} ajouté`); }
+    else { const e = await res.json(); console.error(e.message||'Erreur'); }
+  } catch { console.error('Erreur réseau'); }
+}
 
-            row.insertCell(0).textContent = s.id;
-            row.insertCell(1).innerHTML   = `<strong>${`${s.prenom||''} ${s.nom||''}`.trim()}</strong>`;
-            row.insertCell(2).textContent = s.email || '-';
-            // ✅ Direction
-            row.insertCell(3).textContent = s.direction || '-';
-            row.insertCell(4).textContent = s.telephone || '-';
-            row.insertCell(5).textContent = formatDate(s.date_debut);
-            row.insertCell(6).textContent = formatDate(s.date_fin);
+function ouvrirModification(id) {
+  const s = stagiairesList.find(x => x.id == id); if(!s) return;
+  document.getElementById('editId').value      = s.id;
+  document.getElementById('editNom').value     = s.nom    || '';
+  document.getElementById('editPrenom').value  = s.prenom || '';
+  document.getElementById('editEmail').value   = s.email  || '';
+  document.getElementById('editTel').value     = s.telephone || '';
+  document.getElementById('editDebut').value   = s.date_debut ? s.date_debut.split('T')[0] : '';
+  document.getElementById('editFin').value     = s.date_fin   ? s.date_fin.split('T')[0]   : '';
+  remplirSelectDirection('editDirection', s.direction_id);
+  openModal('modalEdit');
+}
 
-            let statutHtml = '';
-            if (!estActifFlag) {
-                statutHtml = '<span class="badge-termine">Terminé</span>';
-            } else if (estPresentFlag) {
-                statutHtml = '<span class="badge-present">● Présent</span>';
-            } else {
-                statutHtml = '<span style="color:rgba(255,255,255,0.4);font-size:13px;">Absent</span>';
-            }
-            row.insertCell(7).innerHTML = statutHtml;
-            row.insertCell(8).innerHTML = `
-                <button class="btn-edit" onclick="openEditModal(${s.id})"><i class="fas fa-edit"></i> Modifier</button>
-                <button class="btn-delete" onclick="deleteStagiaire(${s.id})"><i class="fas fa-trash"></i></button>
-            `;
-        });
-    }
+async function modifierStagiaire() {
+  const id         = document.getElementById('editId').value;
+  const nom        = document.getElementById('editNom').value.trim();
+  const prenom     = document.getElementById('editPrenom').value.trim();
+  const email      = document.getElementById('editEmail').value.trim();
+  const tel        = document.getElementById('editTel').value.trim();
+  const direction  = document.getElementById('editDirection').value;
+  const dateDebut  = document.getElementById('editDebut').value;
+  const dateFin    = document.getElementById('editFin').value;
 
-    function filterStagiaires() {
-        const search = document.getElementById('searchStagiaire').value.toLowerCase();
-        const filtered = stagiairesList.filter(s =>
-            (s.nom || '').toLowerCase().includes(search) ||
-            (s.prenom || '').toLowerCase().includes(search) ||
-            (s.email || '').toLowerCase().includes(search) ||
-            (s.direction || '').toLowerCase().includes(search)
-        );
-        renderStagiairesTable(filtered);
-    }
+  if (!nom || !prenom)   { notifWarn('⚠️ Nom et prénom sont requis'); return; }
+  if (!email)             { notifWarn('⚠️ L\'email est requis'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { notifWarn('⚠️ Email invalide'); return; }
+  if (!tel)               { notifWarn('⚠️ Le téléphone est requis'); return; }
+  if (!/^\d{6,15}$/.test(tel)) { notifWarn('⚠️ Téléphone invalide (6 à 15 chiffres)'); return; }
+  if (!direction)         { notifWarn('⚠️ Veuillez sélectionner une direction'); return; }
+  if (!dateDebut)         { notifWarn('⚠️ La date de début est requise'); return; }
+  if (!dateFin)           { notifWarn('⚠️ La date de fin est requise'); return; }
+  if (dateDebut > dateFin){ notifWarn('⚠️ La date de fin doit être après la date de début'); return; }
 
-    // ── Modal Ajouter ─────────────────────────────────────
-    function openAddModal() {
-        document.getElementById('addNom').value       = '';
-        document.getElementById('addPrenom').value    = '';
-        document.getElementById('addEmail').value     = '';
-        document.getElementById('addTelephone').value = '';
-        document.getElementById('addDateDebut').value = '';
-        document.getElementById('addDateFin').value   = '';
-        populateDirectionSelect('addDirection');
-        document.getElementById('modalAdd').style.display = 'flex';
-    }
-    function closeAddModal() { document.getElementById('modalAdd').style.display = 'none'; }
+  const data = { nom, prenom, email, telephone: tel, direction_id: direction, date_debut: dateDebut, date_fin: dateFin };
+  try {
+    const res = await apiRequest(`http://localhost:3000/api/stagiaires/${id}`, { method:'PUT', body:JSON.stringify(data) });
+    if (res.ok) { closeModal('modalEdit'); await chargerDonnees(); notifLocale(`Stagiaire ${prenom} ${nom} modifié`); }
+    else { const e = await res.json(); console.error(e.message||'Erreur'); }
+  } catch { console.error('Erreur réseau'); }
+}
 
-    async function ajouterStagiaire() {
-        const nom          = document.getElementById('addNom').value.trim();
-        const prenom       = document.getElementById('addPrenom').value.trim();
-        const email        = document.getElementById('addEmail').value.trim();
-        const telephone    = document.getElementById('addTelephone').value.trim();
-        const direction_id = document.getElementById('addDirection').value || null;
-        const date_debut   = document.getElementById('addDateDebut').value;
-        const date_fin     = document.getElementById('addDateFin').value;
+async function supprimerStagiaire(id) {
+  if (!confirm('Supprimer ce stagiaire et tous ses pointages ?')) return;
+  try {
+    const res = await apiRequest(`http://localhost:3000/api/stagiaires/${id}`, { method:'DELETE' });
+    if (res.ok) { await chargerDonnees(); notifLocale(`Stagiaire supprimé`); }
+    else { const e = await res.json(); console.error(e.message||'Erreur'); }
+  } catch { console.error('Erreur réseau'); }
+}
 
-        if (!nom || !prenom) { showToast('Veuillez saisir le nom et le prénom', 'error'); return; }
-        try {
-            const res = await apiRequest('http://localhost:3000/api/stagiaires', {
-                method: 'POST',
-                body: JSON.stringify({ nom, prenom, email, telephone, direction_id, date_debut, date_fin })
-            });
-            if (res.ok) {
-                showToast('✅ Stagiaire ajouté avec succès');
-                closeAddModal();
-                loadStagiaires();
-            } else {
-                const error = await res.json();
-                showToast('Erreur: ' + (error.message || 'Erreur'), 'error');
-            }
-        } catch (err) { showToast('Erreur de connexion', 'error'); }
-    }
+// ── Chargement données ──
+async function chargerDonnees() {
+  try {
+    const res = await apiRequest('http://localhost:3000/api/stagiaires');
+    stagiairesList = (await res.json()).map(s => ({
+      ...s,
+      est_actif:   estActif(s),
+      est_present: s.est_present === 1 || s.est_present === true
+    }));
+    document.getElementById('nbTotal').textContent    = stagiairesList.length;
+    document.getElementById('nbPresents').textContent = stagiairesList.filter(s => s.est_present && s.est_actif).length;
+    document.getElementById('nbEnStage').textContent  = stagiairesList.filter(s => s.est_actif).length;
+    document.getElementById('nbTermines').textContent = stagiairesList.filter(s => !s.est_actif).length;
+    applySearch();
+  } catch(e) {
+    console.error(e);
+  }
+}
 
-    // ── Modal Modifier ────────────────────────────────────
-    function openEditModal(id) {
-        const s = stagiairesList.find(s => s.id === id);
-        if (!s) return;
+// ── Initialisation ──
+async function init() {
+  if (!checkAuth()) return;       // 1. Auth
+  initSidebarUser();              // 2. Sidebar
+  applyTranslations();            // 3. Langue
+  initNotifications(apiRequest); // 4. Notifications
+  await chargerDirections();     // 5. Directions (pour les selects)
+  await chargerDonnees();        // 6. Données
+}
 
-        document.getElementById('editId').value        = s.id;
-        document.getElementById('editNom').value       = s.nom    || '';
-        document.getElementById('editPrenom').value    = s.prenom || '';
-        document.getElementById('editEmail').value     = s.email  || '';
-        document.getElementById('editTelephone').value = s.telephone || '';
-        document.getElementById('editDateDebut').value = s.date_debut ? s.date_debut.split('T')[0] : '';
-        document.getElementById('editDateFin').value   = s.date_fin   ? s.date_fin.split('T')[0]   : '';
-
-        populateDirectionSelect('editDirection', s.direction_id || '');
-        document.getElementById('modalEdit').style.display = 'flex';
-    }
-    function closeEditModal() { document.getElementById('modalEdit').style.display = 'none'; }
-
-    async function sauvegarderModification() {
-        const id           = document.getElementById('editId').value;
-        const nom          = document.getElementById('editNom').value.trim();
-        const prenom       = document.getElementById('editPrenom').value.trim();
-        const email        = document.getElementById('editEmail').value.trim();
-        const telephone    = document.getElementById('editTelephone').value.trim();
-        const direction_id = document.getElementById('editDirection').value || null;
-        const date_debut   = document.getElementById('editDateDebut').value;
-        const date_fin     = document.getElementById('editDateFin').value;
-
-        if (!nom || !prenom) { showToast('Nom et prénom obligatoires', 'error'); return; }
-        try {
-            const res = await apiRequest(`http://localhost:3000/api/stagiaires/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify({ nom, prenom, email, telephone, direction_id, date_debut, date_fin })
-            });
-            if (res.ok) {
-                showToast('✅ Stagiaire modifié avec succès');
-                closeEditModal();
-                loadStagiaires();
-            } else {
-                const error = await res.json();
-                showToast('Erreur: ' + (error.message || 'Erreur'), 'error');
-            }
-        } catch (err) { showToast('Erreur de connexion', 'error'); }
-    }
-
-    async function deleteStagiaire(id) {
-        if (!confirm('Supprimer ce stagiaire ?')) return;
-        try {
-            const res = await apiRequest(`http://localhost:3000/api/stagiaires/${id}`, { method: 'DELETE' });
-            if (res.ok) { showToast('🗑️ Stagiaire supprimé'); loadStagiaires(); }
-            else { const e = await res.json(); showToast(e.message || 'Erreur', 'error'); }
-        } catch (err) { showToast('Erreur de connexion', 'error'); }
-    }
-
-    async function loadUserInfo() {
-        const user = getUser();
-        if (user) {
-            document.getElementById('userName').textContent = `${user.prenom||''} ${user.nom||''}`.trim() || user.email;
-            const badge = document.getElementById('roleBadge');
-            if (user.role === 'admin') {
-                badge.textContent = '👑 Administrateur';
-                badge.style.background = 'linear-gradient(135deg,#6c63ff,#a855f7)';
-            } else {
-                badge.textContent = '🛡️ Agent de sécurité';
-                badge.style.background = 'linear-gradient(135deg,#06b6d4,#0891b2)';
-            }
-        }
-    }
-
-    window.onclick = function(e) {
-        if (e.target === document.getElementById('modalAdd'))  closeAddModal();
-        if (e.target === document.getElementById('modalEdit')) closeEditModal();
-    };
-
-    loadUserInfo();
-    loadDirections();
-    loadStagiaires();
+init();
 </script>
 </body>
 </html>

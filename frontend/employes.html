@@ -1,604 +1,599 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Employés</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employés — ANSI</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+.two-col { display:grid; grid-template-columns:300px 1fr; gap:20px; }
+.panel { background:var(--surface); border-radius:var(--r-lg); padding:20px; border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+.panel-title { font-size:14px; font-weight:700; color:var(--text-1); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.panel-title i { color:var(--blue); }
 
-        .page-header h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: white;
-        }
+.directions-list { display:flex; flex-direction:column; gap:6px; max-height:280px; overflow-y:auto; margin-bottom:14px; }
+.dir-item { display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border:1px solid var(--border); padding:10px 14px; border-radius:12px; transition:.15s; }
+.dir-item:hover { border-color:rgba(22,113,217,0.3); background:rgba(22,113,217,0.04); }
+.dir-name { color:var(--text-1); font-size:13px; font-weight:500; }
+.btn-dir-del { background:rgba(220,38,38,0.08); border:none; color:var(--red); width:28px; height:28px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; transition:.15s; }
+.btn-dir-del:hover { background:rgba(220,38,38,0.18); transform:scale(1.1); }
+.add-dir { display:flex; gap:8px; padding-top:14px; border-top:1px solid var(--border); }
+.add-dir input { flex:1; background:var(--surface-2); border:1.5px solid var(--border); border-radius:11px; padding:9px 13px; font-size:13px; outline:none; font-family:inherit; color:var(--text-1); }
+.add-dir input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(22,113,217,0.1); }
+.btn-add-dir { background:var(--blue); border:none; color:#fff; width:40px; height:40px; border-radius:11px; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:.15s; }
+.btn-add-dir:hover { background:#0e5a9e; transform:scale(1.05); }
 
-        /* Bouton Retour centré en bas */
-        .footer-buttons {
-            display: flex;
-            justify-content: center;
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
+.form-section-emp { background:var(--surface-2); border-radius:14px; padding:16px; margin-bottom:14px; }
+.form-section-emp-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-3); margin-bottom:14px; display:flex; align-items:center; gap:6px; }
+.form-section-emp-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.form-row-emp { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-group-emp { display:flex; flex-direction:column; gap:6px; }
+.form-group-emp label { font-size:12px; font-weight:600; color:var(--text-2); display:flex; align-items:center; gap:6px; }
+.form-group-emp label i { color:var(--blue); font-size:11px; }
+.form-group-emp input,.form-group-emp select { padding:10px 13px; border:1.5px solid var(--border); border-radius:11px; font-size:13px; background:var(--surface); color:var(--text-1); outline:none; font-family:inherit; width:100%; }
+.form-group-emp input:focus,.form-group-emp select:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(22,113,217,0.1); }
+.btn-submit-full { background:linear-gradient(135deg,#1671d9,#3b9eff); color:#fff; border:none; padding:13px 20px; border-radius:40px; font-weight:700; font-size:14px; cursor:pointer; width:100%; display:flex; align-items:center; justify-content:center; gap:9px; transition:all .2s; box-shadow:0 4px 14px rgba(22,113,217,0.3); font-family:inherit; margin-top:4px; }
+.btn-submit-full:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(22,113,217,0.4); }
 
-        .btn-back {
-            background: rgba(148, 163, 184, 0.2);
-            color: #cbd5e1;
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            padding: 12px 28px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s;
-            font-size: 14px;
-        }
+.data-table { width:100%; border-collapse:collapse; min-width:700px; font-size:13px; }
+.data-table th,.data-table td { padding:12px 14px; text-align:left; border-bottom:1px solid var(--surface-2); vertical-align:middle; white-space:nowrap; }
+.data-table th { background:var(--surface-2); font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-3); letter-spacing:.5px; }
+.data-table tbody tr:hover td { background:rgba(22,113,217,0.03); }
+.btn-edit   { border:none; border-radius:30px; padding:5px 12px; font-size:12px; font-weight:600; cursor:pointer; transition:.15s; display:inline-flex; align-items:center; gap:5px; font-family:inherit; background:rgba(22,113,217,0.1); color:var(--blue); }
+.btn-delete { border:none; border-radius:30px; padding:5px 12px; font-size:12px; font-weight:600; cursor:pointer; transition:.15s; display:inline-flex; align-items:center; gap:5px; font-family:inherit; background:rgba(220,38,38,0.1); color:var(--red); }
+.btn-edit:hover   { background:rgba(22,113,217,0.2); transform:translateY(-1px); }
+.btn-delete:hover { background:rgba(220,38,38,0.18); transform:translateY(-1px); }
 
-        .btn-back:hover {
-            background: rgba(148, 163, 184, 0.3);
-            transform: translateY(-2px);
-            color: white;
-        }
+.search-wrapper { position:relative; display:inline-flex; align-items:center; }
+.search-input-r { background:var(--surface-2); border:1.5px solid var(--border); border-radius:48px; padding:8px 36px 8px 40px; font-size:13px; width:260px; outline:none; transition:all .25s; font-family:inherit; color:var(--text-1); }
+.search-input-r:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(22,113,217,0.15); background:var(--surface); }
+.search-icon-r { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-3); font-size:14px; pointer-events:none; }
+.btn-clear-r { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-3); cursor:pointer; font-size:12px; padding:4px; border-radius:50%; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; }
+.btn-clear-r:hover { background:rgba(220,38,38,0.12); color:var(--red); }
 
-        /* Layout 2 colonnes */
-        .two-columns {
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 24px;
-            margin-bottom: 30px;
-        }
+.pagination { display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:20px; flex-wrap:wrap; }
+.pagination button { background:var(--surface); border:1px solid var(--border); border-radius:30px; padding:6px 12px; font-size:12px; font-weight:500; cursor:pointer; transition:all .15s; color:var(--text-2); font-family:inherit; }
+.pagination button:hover:not(:disabled) { background:var(--blue-dim); border-color:var(--blue); color:var(--blue); }
+.pagination button:disabled { opacity:.4; cursor:not-allowed; }
+.pagination .page-active { background:var(--blue); border-color:var(--blue); color:#fff; }
+.pagination select { background:var(--surface); border:1px solid var(--border); border-radius:30px; padding:6px 10px; font-size:12px; color:var(--text-1); outline:none; cursor:pointer; font-family:inherit; }
 
-        /* Sidebar Directions */
-        .directions-panel {
-            background: rgba(255,255,255,0.04);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 20px;
-            height: fit-content;
-        }
+@media(max-width:900px){.two-col{grid-template-columns:1fr}}
+@media(max-width:700px){.form-row-emp{grid-template-columns:1fr}.search-input-r{width:100%}}
 
-        .directions-panel h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .directions-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .direction-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(255,255,255,0.05);
-            padding: 10px 14px;
-            border-radius: 12px;
-        }
-
-        .direction-name {
-            color: rgba(255,255,255,0.9);
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .direction-delete {
-            background: rgba(239,68,68,0.2);
-            border: none;
-            color: #f87171;
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .add-direction {
-            display: flex;
-            gap: 10px;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .add-direction input {
-            flex: 1;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 12px;
-            padding: 10px 14px;
-            color: white;
-            font-size: 13px;
-        }
-
-        .add-direction input:focus {
-            outline: none;
-            border-color: #06b6d4;
-        }
-
-        .add-direction button {
-            background: linear-gradient(135deg, #06b6d4, #0891b2);
-            border: none;
-            color: white;
-            padding: 0 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        /* Formulaire Employé */
-        .form-panel {
-            background: rgba(255,255,255,0.04);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 24px;
-        }
-
-        .form-panel h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: rgba(255,255,255,0.7);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px 14px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.15);
-            background: rgba(255,255,255,0.05);
-            color: white;
-            font-size: 14px;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #06b6d4;
-        }
-
-        .form-group select option {
-            background: #1e293b;
-            color: white;
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 14px;
-            cursor: pointer;
-            font-weight: 600;
-            width: 100%;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        /* Tableau Employés */
-        .table-container {
-            background: rgba(255,255,255,0.03);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.08);
-            overflow: hidden;
-        }
-
-        .table-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 24px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .table-header-row h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: white;
-        }
-
-        .search-input {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 30px;
-            padding: 8px 16px;
-            color: white;
-            width: 250px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            text-align: left;
-            padding: 14px 20px;
-            color: rgba(255,255,255,0.6);
-            font-weight: 500;
-            font-size: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-
-        td {
-            padding: 12px 20px;
-            color: rgba(255,255,255,0.9);
-            font-size: 13px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .btn-edit {
-            background: rgba(59,130,246,0.2);
-            border: 1px solid rgba(59,130,246,0.3);
-            color: #3b82f6;
-            padding: 5px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-right: 5px;
-        }
-
-        .btn-delete {
-            background: rgba(239,68,68,0.2);
-            border: 1px solid rgba(239,68,68,0.3);
-            color: #f87171;
-            padding: 5px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        @media (max-width: 768px) {
-            .two-columns {
-                grid-template-columns: 1fr;
-            }
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+/* ── Modales compactes sans défilement ── */
+.modal { display:none; position:fixed; inset:0; background:rgba(10,37,64,0.55); backdrop-filter:blur(6px); z-index:1000; align-items:center; justify-content:center; padding:6px; }
+.modal-content { background:var(--surface); border-radius:18px; width:100%; max-width:560px; max-height:99vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,0.25); }
+.modal-header { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.modal-header h3 { font-size:14px; font-weight:700; color:var(--text-1); margin:0; }
+.modal-header p  { font-size:11px; color:var(--text-3); margin:1px 0 0; }
+.modal-icon-wrap { width:32px; height:32px; border-radius:10px; background:linear-gradient(135deg,#1671d9,#3b9eff); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; flex-shrink:0; }
+.modal-body { padding:8px 14px; overflow:hidden; flex:1; display:flex; flex-direction:column; gap:6px; }
+.form-section { display:flex; flex-direction:column; gap:4px; }
+.form-section-title { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-3); padding-bottom:3px; border-bottom:1px solid var(--surface-2); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.form-group { display:flex; flex-direction:column; gap:2px; }
+.form-group label { font-size:11px; font-weight:600; color:var(--text-2); }
+.form-group input, .form-group select { padding:5px 8px; border:1.5px solid var(--border); border-radius:7px; font-size:12px; background:var(--surface-2); color:var(--text-1); outline:none; font-family:inherit; transition:border-color .2s; }
+.form-group input:focus, .form-group select:focus { border-color:var(--blue); background:var(--surface); }
+.modal-footer { display:flex; gap:8px; justify-content:flex-end; padding:8px 14px; border-top:1px solid var(--border); flex-shrink:0; }
+.btn-submit { background:linear-gradient(135deg,#1671d9,#3b9eff); color:#fff; border:none; padding:8px 16px; border-radius:30px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; font-family:inherit; }
+.btn-cancel { background:var(--surface-2); color:var(--text-2); border:1px solid var(--border); padding:8px 16px; border-radius:30px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; }
+</style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- TOP BAR -->
-        <div class="top-bar">
-            <div class="top-bar-left">
-                <img src="logo.png" alt="Logo ANSI" class="ansi-logo" onerror="this.style.display='none'">
-                <h1>Gestion des Employés</h1>
-            </div>
-            <div class="user-info">
-                <span class="role-badge" id="roleBadge"></span>
-                <i class="fas fa-user-circle"></i>
-                <span id="userName"></span>
-                <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
-                </button>
-            </div>
-        </div>
 
-        <!-- EN-TÊTE -->
-        <div class="page-header">
-            <h2><i class="fas fa-id-badge"></i> Gestion des employés</h2>
-        </div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><img src="logo.png" alt="ANSI" onerror="this.style.display='none'"></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label" data-i18n="principal">Principal</div>
+    <a class="sidebar-link"  href="dashboard.html"><i class="fas fa-th-large"></i><span data-i18n="tableau_bord">Tableau de bord</span></a>
+    <a class="sidebar-link" id="btnStagiaires" href="stagiaires.html"><i class="fas fa-user-graduate"></i><span data-i18n="stagiaires">Stagiaires</span></a>
+    <a class="sidebar-link"  href="visiteurs.html"><i class="fas fa-users"></i><span data-i18n="visiteurs">Visiteurs</span></a>
+    <a class="sidebar-link active" id="btnEmployes" href="employes.html"><i class="fas fa-id-badge"></i><span data-i18n="employes">Employés</span></a>
+    <a class="sidebar-link" id="btnSecurite" href="securite.html"><i class="fas fa-shield-alt"></i><span data-i18n="agents_securite">Agents de sécurité</span></a>
+    <a class="sidebar-link"  href="accueil-agent.html"><i class="fas fa-clipboard-check"></i><span data-i18n="pointage_stagiaires">Pointage stagiaires</span></a>
+    <div class="nav-section-label" data-i18n="donnees">Données</div>
+    <a class="sidebar-link"  href="historique.html"><i class="fas fa-history"></i><span data-i18n="historique">Historique</span></a>
+    <a class="sidebar-link"  href="rapports.html"><i class="fas fa-chart-bar"></i><span data-i18n="rapports">Rapports</span></a>
+    <div class="nav-section-label" data-i18n="systeme">Système</div>
+    <a class="sidebar-link"  href="parametres.html"><i class="fas fa-cog"></i><span data-i18n="parametres">Paramètres</span></a>
+    <a class="sidebar-link"  href="profil.html"><i class="fas fa-user-edit"></i><span data-i18n="mon_profil">Mon profil</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user" onclick="window.location.href='profil.html'">
+      <div class="sidebar-avatar" id="sidebarInitials">--</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">—</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">—</div>
+      </div>
+      <i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.25);font-size:10px"></i>
+    </div>
+    <button class="sb-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span data-i18n="deconnexion">Déconnexion</span></button>
+  </div>
+</aside>
 
-        <!-- 2 COLONNES : Directions + Formulaire -->
-        <div class="two-columns">
-            <!-- Panel Directions -->
-            <div class="directions-panel">
-                <h3><i class="fas fa-building"></i> Directions</h3>
-                <div class="directions-list" id="directionsList">
-                    <div style="text-align:center; padding:20px; color:rgba(255,255,255,0.5);">Chargement...</div>
-                </div>
-                <div class="add-direction">
-                    <input type="text" id="newDirectionName" placeholder="Nouvelle direction...">
-                    <button onclick="addDirection()"><i class="fas fa-plus"></i></button>
-                </div>
-            </div>
+<div class="main-wrapper" id="mainWrapper">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <span class="topbar-title" data-i18n="gestion_employes">Gestion des employés</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn" onclick="window.showNotificationsModal && window.showNotificationsModal()">
+        <i class="fas fa-bell"></i><span class="notif-badge hidden">0</span>
+      </button>
+      <button class="topbar-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
+    </div>
+  </header>
 
-            <!-- Formulaire Employé (TOUJOURS VISIBLE) -->
-            <div class="form-panel">
-                <h3><i class="fas fa-user-plus"></i> Ajouter un employé</h3>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Nom *</label>
-                        <input type="text" id="empNom" placeholder="Nom">
-                    </div>
-                    <div class="form-group">
-                        <label>Prénom *</label>
-                        <input type="text" id="empPrenom" placeholder="Prénom">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Direction *</label>
-                    <select id="empDirection">
-                        <option value="">Sélectionner une direction</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="empEmail" placeholder="email@exemple.com">
-                </div>
-                <div class="form-group">
-                    <label>Téléphone</label>
-                    <input type="tel" id="empTelephone" placeholder="06 XX XX XX XX">
-                </div>
-                <button class="btn-submit" onclick="ajouterEmploye()">
-                    <i class="fas fa-save"></i> Ajouter l'employé
-                </button>
-            </div>
-        </div>
-
-        <!-- Tableau des employés -->
-        <div class="table-container">
-            <div class="table-header-row">
-                <h3><i class="fas fa-users"></i> Liste des employés</h3>
-                <input type="text" class="search-input" id="searchEmploye" placeholder="Rechercher par nom, prénom..." onkeyup="filterEmployes()">
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>NOM & PRÉNOM</th>
-                        <th>EMAIL</th>
-                        <th>TÉLÉPHONE</th>
-                        <th>DIRECTION</th>
-                        <th>ACTIONS</th>
-                    </tr>
-                </thead>
-                <tbody id="employesTableBody"></tbody>
-            </table>
-        </div>
-
-        <!-- BOUTON RETOUR CENTRÉ EN BAS -->
-        <div class="footer-buttons">
-            <button class="btn-back" onclick="window.location.href='dashboard.html'">
-                <i class="fas fa-arrow-left"></i> Retour au Dashboard
-            </button>
-        </div>
+  <main class="main-content">
+    <div class="page-header">
+      <h2><i class="fas fa-id-badge"></i> <span data-i18n="employes_ansi">Employés ANSI</span></h2>
     </div>
 
-    <script src="script.js"></script>
-    <script>
-        const currentUser = getUser();
-        if (!currentUser || currentUser.role !== 'admin') {
-            alert('⛔ Accès refusé. Cette page est réservée aux administrateurs.');
-            window.location.href = 'dashboard.html';
-        }
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title"><i class="fas fa-building"></i> <span data-i18n="directions">Directions</span></div>
+        <div class="directions-list" id="directionsList">
+          <div style="text-align:center;padding:20px;color:var(--text-3)"><i class="fas fa-spinner fa-spin"></i></div>
+        </div>
+        <div class="add-dir">
+          <input type="text" id="newDirName" placeholder="Nouvelle direction..." data-i18n-placeholder="nouvelle_direction">
+          <button class="btn-add-dir" onclick="ajouterDirection()"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
 
-        let employesList = [];
-        let directionsList = [];
+      <div class="panel">
+        <div class="panel-title"><i class="fas fa-user-plus"></i> <span data-i18n="ajouter_employe">Ajouter un employé</span></div>
+        <div class="form-section-emp">
+          <div class="form-section-emp-title"><i class="fas fa-id-card"></i> <span data-i18n="identite">Identité</span></div>
+          <div class="form-row-emp">
+            <div class="form-group-emp"><label><i class="fas fa-user"></i> <span data-i18n="nom">Nom *</span></label><input type="text" id="addNom" placeholder="Nom de famille" data-i18n-placeholder="nom_famille"></div>
+            <div class="form-group-emp"><label><i class="fas fa-user"></i> <span data-i18n="prenom">Prénom *</span></label><input type="text" id="addPrenom" placeholder="Prénom" data-i18n-placeholder="prenom_ph"></div>
+          </div>
+        </div>
+        <div class="form-section-emp">
+          <div class="form-section-emp-title"><i class="fas fa-briefcase"></i> <span data-i18n="poste">Poste</span></div>
+          <div class="form-group-emp">
+            <label><i class="fas fa-building"></i> <span data-i18n="direction_stage">Direction *</span></label>
+            <select id="addDirection"><option value="">-- Sélectionner --</option></select>
+          </div>
+          <div class="form-row-emp" style="margin-top:12px">
+            <div class="form-group-emp"><label><i class="fas fa-envelope"></i> <span data-i18n="email">Email</span></label><input type="email" id="addEmail" placeholder="email@exemple.com" data-i18n-placeholder="email_ph"></div>
+            <div class="form-group-emp"><label><i class="fas fa-phone"></i> <span data-i18n="telephone">Téléphone</span></label><input type="tel" id="addTel" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')" placeholder="+227 XX XX XX XX"></div>
+          </div>
+        </div>
+        <button class="btn-submit-full" onclick="ajouterEmploye()"><i class="fas fa-save"></i> <span data-i18n="ajouter_employe">Ajouter l'employé</span></button>
+      </div>
+    </div>
 
-        async function loadDirections() {
-            try {
-                const res = await apiRequest('http://localhost:3000/api/directions');
-                directionsList = await res.json();
-                const container = document.getElementById('directionsList');
-                const select = document.getElementById('empDirection');
-                
-                if (directionsList.length === 0) {
-                    container.innerHTML = '<div style="text-align:center; padding:20px; color:rgba(255,255,255,0.5);">Aucune direction</div>';
-                } else {
-                    container.innerHTML = directionsList.map(d => `
-                        <div class="direction-item">
-                            <span class="direction-name">${escapeHtml(d.nom)}</span>
-                            <button class="direction-delete" onclick="deleteDirection(${d.id})">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    `).join('');
-                }
-                
-                select.innerHTML = '<option value="">Sélectionner une direction</option>' + 
-                    directionsList.map(d => `<option value="${d.id}">${escapeHtml(d.nom)}</option>`).join('');
-            } catch (err) {
-                console.error(err);
-            }
-        }
+    <div class="card">
+      <div class="table-header-row">
+        <h3><i class="fas fa-users"></i> <span data-i18n="liste_employes">Liste des employés</span></h3>
+        <div style="display:flex;align-items:center;background:var(--surface);border:1.5px solid var(--border);border-radius:40px;padding:6px 14px;gap:8px;transition:border-color .2s;box-shadow:var(--shadow-sm);" onfocusin="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 3px rgba(22,113,217,0.1)'" onfocusout="this.style.borderColor='var(--border)';this.style.boxShadow='var(--shadow-sm)'">
+          <i class="fas fa-search" style="color:var(--text-3);font-size:13px;flex-shrink:0"></i>
+          <select id="searchField" onchange="applySearch()" style="appearance:none;-webkit-appearance:none;-moz-appearance:none;background:transparent;border:none;border-right:1.5px solid var(--border);font-size:12px;font-weight:600;color:var(--text-1);outline:none;font-family:inherit;cursor:pointer;padding:0 10px 0 0;margin-right:4px;flex-shrink:0;">
+            <option value="nom_prenom" data-i18n="nom_prenom">Nom & Prénom</option>
+            <option value="email" data-i18n="email">Email</option>
+            <option value="telephone" data-i18n="telephone">Téléphone</option>
+            <option value="direction" data-i18n="direction_stage">Direction</option>
+          </select>
+          <input type="text" id="searchInput" placeholder="Rechercher..." data-i18n-placeholder="rechercher" autocomplete="off" style="border:none;outline:none;font-size:13px;background:transparent;color:var(--text-1);font-family:inherit;flex:1;min-width:120px;">
+          <button onclick="clearSearch()" style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:12px;padding:0;display:flex;align-items:center;"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th data-i18n="nom_prenom">NOM & PRÉNOM</th>
+              <th data-i18n="email">EMAIL</th>
+              <th data-i18n="telephone">TÉLÉPHONE</th>
+              <th data-i18n="direction_stage">DIRECTION</th>
+              <th data-i18n="actions">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button id="btnPrev" onclick="changePage(currentPage-1)" disabled>‹ Précédent</button>
+        <div id="pageNumbers" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        <button id="btnNext" onclick="changePage(currentPage+1)" disabled>Suivant ›</button>
+        <select id="perPage" onchange="changePerPage()">
+          <option value="10">10 par page</option>
+          <option value="25">25 par page</option>
+          <option value="50">50 par page</option>
+        </select>
+      </div>
+    </div>
 
-        async function addDirection() {
-            const nom = document.getElementById('newDirectionName').value.trim();
-            if (!nom) { alert('Veuillez saisir un nom'); return; }
-            try {
-                const res = await apiRequest('http://localhost:3000/api/directions', {
-                    method: 'POST',
-                    body: JSON.stringify({ nom })
-                });
-                if (res.ok) {
-                    document.getElementById('newDirectionName').value = '';
-                    loadDirections();
-                } else alert('Erreur');
-            } catch (err) { alert('Erreur'); }
-        }
+    <div class="footer-buttons">
+      <button class="btn-back" onclick="window.location.href='dashboard.html'"><i class="fas fa-arrow-left"></i> <span data-i18n="retour_dashboard">Retour au Dashboard</span></button>
+    </div>
+  </main>
 
-        async function deleteDirection(id) {
-            if (!confirm('Supprimer cette direction ?')) return;
-            try {
-                const res = await apiRequest(`http://localhost:3000/api/directions/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    loadDirections();
-                    loadEmployes();
-                } else {
-                    const error = await res.json();
-                    alert(error.message || 'Erreur');
-                }
-            } catch (err) { alert('Cette direction contient des employés'); }
-        }
+  <footer class="page-footer">
+    <span>© 2026 ANSI — <span data-i18n="footer_droits">Tous droits réservés.</span></span>
+    <span>Version 1.0.0 · <span data-i18n="footer_version">Système de gestion des entrées/sorties</span></span>
+  </footer>
+</div>
 
-        async function loadEmployes() {
-            try {
-                const res = await apiRequest('http://localhost:3000/api/employes');
-                employesList = await res.json();
-                renderEmployesTable(employesList);
-            } catch (err) { console.error(err); }
-        }
+<!-- MODAL MODIFIER -->
+<div id="modalEdit" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-icon-wrap" style="background:linear-gradient(135deg,#0d9e8e,#2dd4bf)"><i class="fas fa-pen"></i></div>
+      <div><h3 data-i18n="modifier">Modifier l'employé</h3><p data-i18n="mettre_a_jour">Mettez à jour les informations</p></div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="identite">Identité</div>
+        <div class="form-row">
+          <div class="form-group"><label data-i18n="nom">Nom *</label><input type="text" id="editNom"></div>
+          <div class="form-group"><label data-i18n="prenom">Prénom *</label><input type="text" id="editPrenom"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="poste">Poste</div>
+        <div class="form-group"><label data-i18n="direction_stage">Direction *</label><select id="editDirection"></select></div>
+        <div class="form-row" style="margin-top:12px">
+          <div class="form-group"><label data-i18n="email">Email</label><input type="email" id="editEmail"></div>
+          <div class="form-group"><label data-i18n="telephone">Téléphone</label><input type="tel" id="editTel" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-submit" onclick="modifierEmploye()"><i class="fas fa-save"></i> <span data-i18n="enregistrer">Enregistrer</span></button>
+      <button class="btn-cancel" onclick="closeModal('modalEdit')" data-i18n="annuler">Annuler</button>
+    </div>
+  </div>
+</div>
 
-        function renderEmployesTable(employes) {
-            const tbody = document.getElementById('employesTableBody');
-            tbody.innerHTML = '';
-            
-            if (employes.length === 0) {
-                const row = tbody.insertRow();
-                const cell = row.insertCell(0);
-                cell.colSpan = 6;
-                cell.textContent = 'Aucun employé';
-                cell.style.textAlign = 'center';
-                cell.style.padding = '40px';
-                return;
-            }
-            
-            employes.forEach(emp => {
-                const row = tbody.insertRow();
-                row.insertCell(0).textContent = emp.id;
-                row.insertCell(1).textContent = `${emp.prenom || ''} ${emp.nom || ''}`.trim();
-                row.insertCell(2).textContent = emp.email || '-';
-                row.insertCell(3).textContent = emp.telephone || '-';
-                row.insertCell(4).textContent = emp.direction || '-';
-                
-                row.insertCell(5).innerHTML = `
-                    <button class="btn-edit" onclick="editEmploye(${emp.id})"><i class="fas fa-edit"></i></button>
-                    <button class="btn-delete" onclick="deleteEmploye(${emp.id})"><i class="fas fa-trash"></i></button>
-                `;
-            });
-        }
+<script src="script.js"></script>
+<script src="notifications.js"></script>
+<script src="lang.js"></script>
+<script>
+// ── Variables ──
+let employesList = [], directionsList = [], filteredList = [];
+let currentPage = 1, itemsPerPage = 10;
 
-        function filterEmployes() {
-            const search = document.getElementById('searchEmploye').value.toLowerCase();
-            const filtered = employesList.filter(emp => 
-                (emp.nom || '').toLowerCase().includes(search) || 
-                (emp.prenom || '').toLowerCase().includes(search)
-            );
-            renderEmployesTable(filtered);
-        }
+// ── Notification locale (toast cloche + liste + badge) ──
+function notifLocale(msg) {
+  if (typeof window.addNotification === 'function') {
+    window.addNotification({ type: 'action', message: msg });
+  } else if (typeof window.showNotifToast === 'function') {
+    window.showNotifToast(msg);
+  }
+}
 
-        async function ajouterEmploye() {
-            const nom = document.getElementById('empNom').value.trim();
-            const prenom = document.getElementById('empPrenom').value.trim();
-            const direction_id = document.getElementById('empDirection').value;
-            const email = document.getElementById('empEmail').value.trim();
-            const telephone = document.getElementById('empTelephone').value.trim();
-            
-            if (!nom) { alert('Veuillez saisir le nom'); return; }
-            if (!direction_id) { alert('Veuillez sélectionner une direction'); return; }
-            
-            try {
-                const res = await apiRequest('http://localhost:3000/api/employes', {
-                    method: 'POST',
-                    body: JSON.stringify({ nom, prenom, direction_id, email, telephone })
-                });
-                if (res.ok) {
-                    document.getElementById('empNom').value = '';
-                    document.getElementById('empPrenom').value = '';
-                    document.getElementById('empEmail').value = '';
-                    document.getElementById('empTelephone').value = '';
-                    document.getElementById('empDirection').value = '';
-                    loadEmployes();
-                    alert('Employé ajouté avec succès');
-                } else alert('Erreur lors de l\'ajout');
-            } catch (err) { alert('Erreur'); }
-        }
+// ── Modales ──
+function openModal(id)  { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+document.querySelectorAll('.modal').forEach(m => {
+  m.addEventListener('click', e => { if(e.target === m) m.style.display = 'none'; });
+});
 
-        async function deleteEmploye(id) {
-            if (!confirm('Supprimer cet employé ?')) return;
-            try {
-                const res = await apiRequest(`http://localhost:3000/api/employes/${id}`, { method: 'DELETE' });
-                if (res.ok) loadEmployes();
-                else alert('Erreur');
-            } catch (err) { alert('Erreur'); }
-        }
+// ── Directions ──
+async function chargerDirections() {
+  try {
+    const res = await apiRequest('http://localhost:3000/api/directions');
+    directionsList = await res.json();
+    renderDirections();
+    remplirSelectDirection('addDirection');
+    remplirSelectDirection('editDirection');
+  } catch(e) { console.error(e); }
+}
 
-        async function editEmploye(id) {
-            const emp = employesList.find(e => e.id === id);
-            if (!emp) return;
-            
-            const newNom = prompt('Nouveau nom :', emp.nom);
-            if (newNom === null) return;
-            const newPrenom = prompt('Nouveau prénom :', emp.prenom);
-            const newDirection = prompt('Nouvel ID direction :', emp.direction_id);
-            const newEmail = prompt('Nouvel email :', emp.email);
-            const newTelephone = prompt('Nouveau téléphone :', emp.telephone);
-            
-            try {
-                const res = await apiRequest(`http://localhost:3000/api/employes/${id}`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ 
-                        nom: newNom, prenom: newPrenom, direction_id: newDirection,
-                        email: newEmail, telephone: newTelephone
-                    })
-                });
-                if (res.ok) loadEmployes();
-                else alert('Erreur');
-            } catch (err) { alert('Erreur'); }
-        }
+function renderDirections() {
+  const container = document.getElementById('directionsList');
+  if (!container) return;
+  if (!directionsList.length) {
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-3)">Aucune direction</div>';
+    return;
+  }
+  container.innerHTML = directionsList.map(d => `
+    <div class="dir-item" id="dir-item-${d.id}">
+      <span class="dir-name" id="dir-name-${d.id}">${d.nom}</span>
+      <input id="dir-input-${d.id}" type="text" value="${d.nom}"
+        style="display:none;flex:1;border:1.5px solid var(--blue);border-radius:8px;padding:4px 8px;font-size:13px;font-family:inherit;outline:none;background:var(--surface)"
+        onkeydown="if(event.key==='Enter') sauvegarderDirection(${d.id}); if(event.key==='Escape') annulerEditionDir(${d.id})">
+      <div style="display:flex;gap:4px;align-items:center">
+        <button id="dir-btn-edit-${d.id}" class="btn-dir-del" onclick="editerDirection(${d.id})" title="Modifier" style="color:var(--blue);background:var(--blue-dim);border-color:rgba(22,113,217,0.2)">
+          <i class="fas fa-pen"></i>
+        </button>
+        <button id="dir-btn-save-${d.id}" class="btn-dir-del" onclick="sauvegarderDirection(${d.id})" title="Enregistrer" style="display:none;color:#0d9e8e;background:rgba(13,158,142,0.1);border-color:rgba(13,158,142,0.2)">
+          <i class="fas fa-check"></i>
+        </button>
+        <button class="btn-dir-del" onclick="supprimerDirection(${d.id})" title="Supprimer">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </div>
+    </div>`).join('');
+}
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
+function remplirSelectDirection(selectId, selectedId = '') {
+  const s = document.getElementById(selectId); if(!s) return;
+  s.innerHTML = '<option value="">-- Sélectionner --</option>';
+  directionsList.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d.id; o.textContent = d.nom;
+    if (String(d.id) === String(selectedId)) o.selected = true;
+    s.appendChild(o);
+  });
+}
 
-        async function loadUserInfo() {
-            const currentUser = getUser();
-            if (currentUser) {
-                document.getElementById('userName').textContent = `${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim() || currentUser.email;
-                const roleBadge = document.getElementById('roleBadge');
-                if (currentUser.role === 'admin') {
-                    roleBadge.textContent = '👑 Administrateur';
-                    roleBadge.style.background = 'linear-gradient(135deg,#6c63ff,#a855f7)';
-                } else {
-                    roleBadge.textContent = '🛡️ Agent de sécurité';
-                    roleBadge.style.background = 'linear-gradient(135deg,#06b6d4,#0891b2)';
-                }
-            }
-        }
+function editerDirection(id) {
+  // Passer en mode édition
+  document.getElementById(`dir-name-${id}`).style.display  = 'none';
+  document.getElementById(`dir-input-${id}`).style.display = 'flex';
+  document.getElementById(`dir-btn-edit-${id}`).style.display = 'none';
+  document.getElementById(`dir-btn-save-${id}`).style.display = 'flex';
+  document.getElementById(`dir-input-${id}`).focus();
+  document.getElementById(`dir-input-${id}`).select();
+}
 
-        loadUserInfo();
-        loadDirections();
-        loadEmployes();
-    </script>
+function annulerEditionDir(id) {
+  const dir = directionsList.find(d => d.id == id);
+  document.getElementById(`dir-input-${id}`).value = dir?.nom || '';
+  document.getElementById(`dir-name-${id}`).style.display  = 'block';
+  document.getElementById(`dir-input-${id}`).style.display = 'none';
+  document.getElementById(`dir-btn-edit-${id}`).style.display = 'flex';
+  document.getElementById(`dir-btn-save-${id}`).style.display = 'none';
+}
+
+async function sauvegarderDirection(id) {
+  const nouveauNom = document.getElementById(`dir-input-${id}`).value.trim();
+  if (!nouveauNom) { notifWarn('⚠️ Le nom ne peut pas être vide'); return; }
+  try {
+    const res = await apiRequest(`http://localhost:3000/api/directions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ nom: nouveauNom })
+    });
+    if (res.ok) {
+      await chargerDirections();
+      await chargerDonnees();
+      notifLocale(`Direction renommée en "${nouveauNom}"`);
+    } else {
+      const e = await res.json();
+      notifWarn('⚠️ ' + (e.message || 'Erreur lors de la modification'));
+    }
+  } catch { notifWarn('⚠️ Erreur réseau'); }
+}
+
+async function ajouterDirection() {
+  const nom = document.getElementById('newDirName').value.trim();
+  if (!nom) { notifWarn('⚠️ Saisissez un nom de direction'); return; }
+  try {
+    const res = await apiRequest('http://localhost:3000/api/directions', { method:'POST', body:JSON.stringify({nom}) });
+    if (res.ok) {
+      document.getElementById('newDirName').value = '';
+      await chargerDirections();
+      notifLocale(`Direction "${nom}" ajoutée`);
+    } else {
+      const e = await res.json();
+      notifWarn('⚠️ ' + (e.message||'Erreur lors de l\'ajout'));
+    }
+  } catch { notifWarn('⚠️ Erreur réseau'); }
+}
+
+async function supprimerDirection(id) {
+  // Vérifier d'abord si des employés sont dans cette direction
+  const dir = directionsList.find(d => d.id == id);
+  const nbEmployes = employesList.filter(e => e.direction_id == id || e.direction === dir?.nom).length;
+
+  if (nbEmployes > 0) {
+    notifWarn(`⚠️ Impossible : ${nbEmployes} employé(s) dans cette direction. Déplacez-les d'abord.`);
+    return;
+  }
+
+  if (!confirm(`Supprimer la direction "${dir?.nom || ''}" ?`)) return;
+  try {
+    const res = await apiRequest(`http://localhost:3000/api/directions/${id}`, { method:'DELETE' });
+    if (res.ok) {
+      await chargerDirections();
+      await chargerDonnees();
+      notifLocale(`Direction supprimée`);
+    } else {
+      const e = await res.json();
+      notifWarn('⚠️ ' + (e.message||'Erreur lors de la suppression'));
+    }
+  } catch { notifWarn('⚠️ Erreur réseau'); }
+}
+
+// ── Recherche & pagination ──
+function applySearch() {
+  const q     = document.getElementById('searchInput').value.trim().toLowerCase();
+  const field = document.getElementById('searchField').value;
+  filteredList = q === '' ? [...employesList] : employesList.filter(e => {
+    if (field === 'nom_prenom') {
+      return (e.prenom||'').toLowerCase().includes(q) || (e.nom||'').toLowerCase().includes(q);
+    }
+    const val = field === 'direction'  ? (e.direction||'') :
+                field === 'email'      ? (e.email||'') :
+                field === 'telephone'  ? (e.telephone||'') : '';
+    return val.toLowerCase().includes(q);
+  });
+  filteredList.sort((a, b) => {
+    if (field === 'nom_prenom') {
+      const pa = (a.prenom||'').toLowerCase(), pb = (b.prenom||'').toLowerCase();
+      if (q) {
+        const aS = pa.startsWith(q) || (a.nom||'').toLowerCase().startsWith(q) ? 0 : 1;
+        const bS = pb.startsWith(q) || (b.nom||'').toLowerCase().startsWith(q) ? 0 : 1;
+        if (aS !== bS) return aS - bS;
+      }
+      const c = pa.localeCompare(pb);
+      return c !== 0 ? c : (a.nom||'').toLowerCase().localeCompare((b.nom||'').toLowerCase());
+    }
+    const va = (a[field]||'').toLowerCase(), vb = (b[field]||'').toLowerCase();
+    if (q) {
+      const aS = va.startsWith(q) ? 0 : 1, bS = vb.startsWith(q) ? 0 : 1;
+      if (aS !== bS) return aS - bS;
+    }
+    return va.localeCompare(vb);
+  });
+  currentPage = 1;
+  renderTable();
+  renderPagination();
+}
+function clearSearch() { document.getElementById('searchInput').value = ''; applySearch(); }
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(applySearch, 300);
+});
+
+function changePage(p) {
+  const total = Math.ceil(filteredList.length / itemsPerPage);
+  if (p < 1 || p > total) return;
+  currentPage = p; renderTable(); renderPagination();
+}
+function changePerPage() {
+  itemsPerPage = parseInt(document.getElementById('perPage').value);
+  currentPage = 1; renderTable(); renderPagination();
+}
+
+// ── Rendu ──
+function renderTable() {
+  const start = (currentPage-1) * itemsPerPage;
+  const items = filteredList.slice(start, start + itemsPerPage);
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  if (!items.length) {
+    const r = tbody.insertRow(); const c = r.insertCell(0);
+    c.colSpan = 5; c.textContent = t('aucun_employe');
+    c.style.cssText = 'text-align:center;padding:36px;color:#94a3b8';
+    return;
+  }
+  items.forEach(e => {
+    const r = tbody.insertRow();
+    r.insertCell(0).innerHTML = `<strong>${e.prenom||''} ${e.nom||''}</strong>`;
+    r.insertCell(1).textContent = e.email     || '-';
+    r.insertCell(2).textContent = e.telephone || '-';
+    r.insertCell(3).textContent = e.direction || '-';
+    r.insertCell(4).innerHTML = `
+      <div class="td-actions">
+        <button class="btn-edit"   onclick="ouvrirModification(${e.id})"><i class="fas fa-pen"></i> ${t('modifier')}</button>
+        <button class="btn-delete" onclick="supprimerEmploye(${e.id})"><i class="fas fa-trash"></i> ${t('supprimer')}</button>
+      </div>`;
+  });
+}
+
+function renderPagination() {
+  const total = Math.ceil(filteredList.length / itemsPerPage);
+  document.getElementById('btnPrev').disabled = currentPage === 1;
+  document.getElementById('btnNext').disabled = currentPage === total || total === 0;
+  const container = document.getElementById('pageNumbers');
+  container.innerHTML = '';
+  for (let i = 1; i <= total; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    if (i === currentPage) btn.classList.add('page-active');
+    btn.onclick = () => changePage(i);
+    container.appendChild(btn);
+  }
+}
+
+// ── CRUD Employés ──
+async function ajouterEmploye() {
+  const nom          = document.getElementById('addNom').value.trim();
+  const prenom       = document.getElementById('addPrenom').value.trim();
+  const email        = document.getElementById('addEmail').value.trim();
+  const tel          = document.getElementById('addTel').value.trim();
+  const direction_id = document.getElementById('addDirection').value;
+
+  if (!nom)          { notifWarn('⚠️ Le nom est requis'); return; }
+  if (!email)         { notifWarn('⚠️ L\'email est requis'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { notifWarn('⚠️ Email invalide'); return; }
+  if (!tel)           { notifWarn('⚠️ Le téléphone est requis'); return; }
+  if (!/^\d{6,15}$/.test(tel)) { notifWarn('⚠️ Téléphone invalide (6 à 15 chiffres)'); return; }
+  if (!direction_id)  { notifWarn('⚠️ Veuillez sélectionner une direction'); return; }
+
+  const data = { nom, prenom, direction_id, email, telephone: tel };
+  try {
+    const res = await apiRequest('http://localhost:3000/api/employes', { method:'POST', body:JSON.stringify(data) });
+    if (res.ok) {
+      ['addNom','addPrenom','addEmail','addTel'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('addDirection').value = '';
+      await chargerDonnees();
+      notifLocale(`Employé ${prenom} ${nom} ajouté`);
+    } else { const e = await res.json(); console.error(e.message||'Erreur'); }
+  } catch { console.error('Erreur réseau'); }
+}
+
+function ouvrirModification(id) {
+  const e = employesList.find(x => x.id == id); if(!e) return;
+  document.getElementById('editId').value      = e.id;
+  document.getElementById('editNom').value     = e.nom      || '';
+  document.getElementById('editPrenom').value  = e.prenom   || '';
+  document.getElementById('editEmail').value   = e.email    || '';
+  document.getElementById('editTel').value     = e.telephone|| '';
+  remplirSelectDirection('editDirection', e.direction_id);
+  openModal('modalEdit');
+}
+
+async function modifierEmploye() {
+  const id           = document.getElementById('editId').value;
+  const nom          = document.getElementById('editNom').value.trim();
+  const prenom       = document.getElementById('editPrenom').value.trim();
+  const email        = document.getElementById('editEmail').value.trim();
+  const tel          = document.getElementById('editTel').value.trim();
+  const direction_id = document.getElementById('editDirection').value;
+
+  if (!nom)          { notifWarn('⚠️ Le nom est requis'); return; }
+  if (!email)         { notifWarn('⚠️ L\'email est requis'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { notifWarn('⚠️ Email invalide'); return; }
+  if (!tel)           { notifWarn('⚠️ Le téléphone est requis'); return; }
+  if (!/^\d{6,15}$/.test(tel)) { notifWarn('⚠️ Téléphone invalide (6 à 15 chiffres)'); return; }
+  if (!direction_id)  { notifWarn('⚠️ Veuillez sélectionner une direction'); return; }
+
+  const data = { nom, prenom, direction_id, email, telephone: tel };
+  try {
+    const res = await apiRequest(`http://localhost:3000/api/employes/${id}`, { method:'PUT', body:JSON.stringify(data) });
+    if (res.ok) { closeModal('modalEdit'); await chargerDonnees(); notifLocale(`Employé ${prenom} ${nom} modifié`); }
+    else { const e = await res.json(); console.error(e.message||'Erreur'); }
+  } catch { console.error('Erreur réseau'); }
+}
+
+async function supprimerEmploye(id) {
+  if (!confirm('Supprimer cet employé ?')) return;
+  try {
+    const res = await apiRequest(`http://localhost:3000/api/employes/${id}`, { method:'DELETE' });
+    if (res.ok) { await chargerDonnees(); notifLocale('Employé supprimé'); }
+    else { const e = await res.json(); notifWarn('⚠️ ' + (e.message||'Erreur')); }
+  } catch { notifWarn('⚠️ Erreur réseau'); }
+}
+
+// ── Chargement données ──
+async function chargerDonnees() {
+  try {
+    const res = await apiRequest('http://localhost:3000/api/employes');
+    employesList = await res.json();
+    applySearch();
+  } catch(e) { console.error(e); }
+}
+
+// ── Initialisation ──
+async function init() {
+  if (!checkAuth()) return;
+  const user = getUser();
+  if (!user || user.role !== 'admin') {
+    alert('⛔ Accès réservé aux administrateurs.');
+    window.location.href = 'dashboard.html';
+    return;
+  }
+  initSidebarUser();
+  applyTranslations();
+  initNotifications(apiRequest);
+  await chargerDirections();
+  await chargerDonnees();
+}
+
+init();
+</script>
 </body>
 </html>

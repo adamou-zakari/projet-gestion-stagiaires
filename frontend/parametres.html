@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paramètres — ANSI</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<style>
+.main-wrapper { opacity:0; transition:opacity 0.2s ease; }
+.main-wrapper.page-ready { opacity:1; }
+.main-content { align-items:center; }
+.main-content > * { width:100%; max-width:860px; }
+.settings-card { background:var(--surface); border-radius:var(--r-lg); padding:22px 24px; border:1px solid var(--border); box-shadow:var(--shadow-sm); margin-bottom:20px; }
+.settings-card-title { font-size:14px; font-weight:700; color:var(--text-1); display:flex; align-items:center; gap:8px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.settings-card-title i { color:var(--blue); }
+.setting-item { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--surface-2); flex-wrap:wrap; gap:12px; }
+.setting-item:last-child { border-bottom:none; }
+.setting-label { font-size:13px; font-weight:600; color:var(--text-1); }
+.setting-desc { font-size:11px; color:var(--text-3); margin-top:3px; }
+.setting-control select { padding:8px 13px; border:1.5px solid var(--border); border-radius:var(--r-sm); background:var(--surface-2); color:var(--text-1); font-size:12px; outline:none; font-family:inherit; }
+.setting-control select:focus { border-color:var(--blue); }
+.toggle { width:48px; height:26px; background:var(--border); border-radius:26px; cursor:pointer; position:relative; transition:background .2s; flex-shrink:0; }
+.toggle.on { background:var(--blue); }
+.toggle::after { content:''; width:20px; height:20px; background:#fff; border-radius:50%; position:absolute; top:3px; left:3px; transition:left .2s; box-shadow:0 1px 4px rgba(0,0,0,0.2); }
+.toggle.on::after { left:25px; }
+.btn-export { background:var(--blue-dim); border:1px solid rgba(22,113,217,0.2); color:var(--blue); padding:9px 18px; border-radius:30px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:all .2s; font-family:inherit; }
+.btn-export:hover { background:rgba(22,113,217,0.2); transform:translateY(-1px); }
+@media (max-width:900px) { .main-content > * { max-width:100%; } .setting-item { flex-direction:column; align-items:flex-start; } }
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><img src="logo.png" alt="ANSI" onerror="this.style.display='none'"></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label" data-i18n="principal">Principal</div>
+    <a class="sidebar-link" href="dashboard.html"><i class="fas fa-th-large"></i><span data-i18n="tableau_bord">Tableau de bord</span></a>
+    <a class="sidebar-link" id="btnStagiaires" href="stagiaires.html"><i class="fas fa-user-graduate"></i><span data-i18n="stagiaires">Stagiaires</span></a>
+    <a class="sidebar-link" href="visiteurs.html"><i class="fas fa-users"></i><span data-i18n="visiteurs">Visiteurs</span></a>
+    <a class="sidebar-link" id="btnEmployes" href="employes.html"><i class="fas fa-id-badge"></i><span data-i18n="employes">Employés</span></a>
+    <a class="sidebar-link" id="btnSecurite" href="securite.html"><i class="fas fa-shield-alt"></i><span data-i18n="agents_securite">Agents de sécurité</span></a>
+    <a class="sidebar-link" href="accueil-agent.html"><i class="fas fa-clipboard-check"></i><span data-i18n="pointage_stagiaires">Pointage stagiaires</span></a>
+    <div class="nav-section-label" data-i18n="donnees">Données</div>
+    <a class="sidebar-link" href="historique.html"><i class="fas fa-history"></i><span data-i18n="historique">Historique</span></a>
+    <a class="sidebar-link" href="rapports.html"><i class="fas fa-chart-bar"></i><span data-i18n="rapports">Rapports</span></a>
+    <div class="nav-section-label" data-i18n="systeme">Système</div>
+    <a class="sidebar-link active" href="parametres.html"><i class="fas fa-cog"></i><span data-i18n="parametres">Paramètres</span></a>
+    <a class="sidebar-link" href="profil.html"><i class="fas fa-user-edit"></i><span data-i18n="mon_profil">Mon profil</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user" onclick="window.location.href='profil.html'">
+      <div class="sidebar-avatar" id="sidebarInitials">--</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">—</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">—</div>
+      </div>
+      <i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.25);font-size:10px"></i>
+    </div>
+    <button class="sb-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span data-i18n="deconnexion">Déconnexion</span></button>
+  </div>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <span class="topbar-title" data-i18n="parametres">Paramètres</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn" onclick="window.showNotificationsModal && window.showNotificationsModal()"><i class="fas fa-bell"></i><span class="notif-badge hidden">0</span></button>
+      <button class="topbar-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h2><i class="fas fa-sliders-h"></i> <span data-i18n="preferences">Préférences générales</span></h2>
+    </div>
+
+    <!-- Apparence -->
+    <div class="settings-card">
+      <div class="settings-card-title"><i class="fas fa-palette"></i> <span data-i18n="apparence">Apparence</span></div>
+      <div class="setting-item">
+        <div>
+          <div class="setting-label" data-i18n="theme_sombre">Thème sombre</div>
+          <div class="setting-desc" data-i18n="theme_desc">Basculer l'interface en mode nuit</div>
+        </div>
+        <div class="toggle" id="toggleDark" onclick="this.classList.toggle('on'); syncThemeFromToggle()"></div>
+      </div>
+    </div>
+
+    <!-- Langue -->
+    <div class="settings-card">
+      <div class="settings-card-title"><i class="fas fa-globe"></i> <span data-i18n="langue_region">Langue et région</span></div>
+      <div class="setting-item">
+        <div>
+          <div class="setting-label" data-i18n="langue_interface">Langue de l'interface</div>
+          <div class="setting-desc" data-i18n="langue_desc">Choisissez la langue d'affichage</div>
+        </div>
+        <div class="setting-control">
+          <select id="langueSelect" onchange="changeLangue(this.value)">
+            <option value="fr">🇫🇷 Français</option>
+            <option value="en">🇬🇧 English</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Données -->
+    <div class="settings-card">
+      <div class="settings-card-title"><i class="fas fa-database"></i> <span data-i18n="donnees_param">Données</span></div>
+      <div class="setting-item">
+        <div>
+          <div class="setting-label" data-i18n="retention">Période de rétention des logs</div>
+          <div class="setting-desc" data-i18n="retention_desc">Durée de conservation des journaux d'activité</div>
+        </div>
+        <div class="setting-control">
+          <select id="retentionSelect" onchange="localStorage.setItem('retention', this.value)">
+            <option value="30">30 jours</option>
+            <option value="90">90 jours</option>
+            <option value="365">1 an</option>
+          </select>
+        </div>
+      </div>
+      <div class="setting-item">
+        <div>
+          <div class="setting-label" data-i18n="exporter_logs">Exporter les logs</div>
+          <div class="setting-desc" data-i18n="exporter_logs_desc">Télécharger l'historique au format CSV</div>
+        </div>
+        <button class="btn-export" onclick="exportLogs()"><i class="fas fa-download"></i> <span data-i18n="exporter_csv">Exporter CSV</span></button>
+        <button class="btn-export" onclick="exportLogsPDF()" style="background:rgba(220,38,38,0.08);border-color:rgba(220,38,38,0.2);color:var(--red)"><i class="fas fa-file-pdf"></i> <span data-i18n="exporter_pdf">Exporter PDF</span></button>
+      </div>
+    </div>
+
+    <!-- Zone dangereuse — admin uniquement -->
+    <div class="settings-card" id="cardReset" style="display:none;border-color:rgba(220,38,38,0.3);">
+      <div class="settings-card-title" style="color:#dc2626">
+        <i class="fas fa-exclamation-triangle" style="color:#dc2626"></i>
+        <span data-i18n="zone_danger">Zone dangereuse</span>
+      </div>
+      <div class="setting-item">
+        <div>
+          <div class="setting-label" style="color:#dc2626">Réinitialiser le système</div>
+          <div class="setting-desc">Supprime tous les comptes utilisateurs et retourne au setup initial. Les données sont conservées.</div>
+        </div>
+        <button class="btn-export" onclick="confirmerReset()" style="background:rgba(220,38,38,0.08);border-color:rgba(220,38,38,0.25);color:#dc2626;white-space:nowrap">
+          <i class="fas fa-redo"></i> Réinitialiser
+        </button>
+      </div>
+      <div class="setting-item">
+        <div>
+          <div class="setting-label" style="color:#dc2626">Effacer toutes les données</div>
+          <div class="setting-desc">Supprime visiteurs, stagiaires, pointages et logs. Les comptes et directions sont conservés.</div>
+        </div>
+        <button class="btn-export" onclick="confirmerClearData()" style="background:rgba(220,38,38,0.08);border-color:rgba(220,38,38,0.25);color:#dc2626;white-space:nowrap">
+          <i class="fas fa-trash"></i> Effacer les données
+        </button>
+      </div>
+    </div>
+
+    <div class="footer-buttons">
+      <button class="btn-back" onclick="window.location.href='dashboard.html'"><i class="fas fa-arrow-left"></i> <span data-i18n="retour_dashboard">Retour au Dashboard</span></button>
+    </div>
+  </main>
+
+  <footer class="page-footer">
+    <span>© 2026 ANSI — <span data-i18n="footer_droits">Tous droits réservés.</span></span>
+    <span>Version 1.0.0 · <span data-i18n="footer_version">Système de gestion des entrées/sorties</span></span>
+  </footer>
+</div>
+
+<script src="script.js"></script>
+<script src="notifications.js"></script>
+<script src="lang.js"></script>
+<script>
+
+// ── Thème ──
+function syncThemeFromToggle() {
+  const isOn = document.getElementById('toggleDark').classList.contains('on');
+  document.body.classList.toggle('dark', isOn);
+  const themeIcon = document.getElementById('themeIcon');
+  if (themeIcon) themeIcon.className = isOn ? 'fas fa-sun' : 'fas fa-moon';
+  localStorage.setItem('theme', isOn ? 'dark' : 'light');
+}
+
+// ── Langue ──
+function changeLangue(lang) {
+  if (typeof setLanguage === 'function') setLanguage(lang);
+  localStorage.setItem('langue', lang);
+  document.getElementById('langueSelect').value = lang;
+  if (typeof applyTranslations === 'function') applyTranslations();
+}
+
+// ── Charger settings ──
+function loadSettings() {
+  const dark = localStorage.getItem('theme') === 'dark';
+  const toggleDark = document.getElementById('toggleDark');
+  if (toggleDark) toggleDark.classList.toggle('on', dark);
+  const langueSelect = document.getElementById('langueSelect');
+  if (langueSelect) langueSelect.value = localStorage.getItem('langue') || 'fr';
+  const retentionSelect = document.getElementById('retentionSelect');
+  if (retentionSelect) retentionSelect.value = localStorage.getItem('retention') || '30';
+}
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', async function() {
+  checkAuth();
+  loadSettings();
+  initSidebarUser();
+
+  // Afficher zone dangereuse uniquement pour admin
+  const user = getUser();
+  if (user && user.role === 'admin') {
+    const card = document.getElementById('cardReset');
+    if (card) card.style.display = 'block';
+  }
+
+  if (typeof applyTranslations === 'function') {
+    applyTranslations();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+  }
+  const wrapper = document.querySelector('.main-wrapper');
+  if (wrapper) wrapper.classList.add('page-ready');
+  initNotifications(apiRequest);
+});
+
+// ── Export CSV ──
+async function exportLogs() {
+  try {
+    const res = await apiRequest('http://localhost:3000/api/historique/logs?limit=1000');
+    const data = await res.json();
+    if (!data.data || !data.data.length) { alert('Aucune donnée'); return; }
+    const rows = ['Date,Action,Utilisateur,Détails,IP'];
+    data.data.forEach(l => {
+      const date = new Date(l.date_action).toLocaleString('fr-FR');
+      const user = l.utilisateur_nom ? `${l.utilisateur_prenom||''} ${l.utilisateur_nom}`.trim() : (l.utilisateur_login||'Système');
+      rows.push(`"${date}","${l.action||''}","${user}","${(l.details||'').replace(/"/g,'""')}","${l.ip_adresse||''}"`);
+    });
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `logs_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  } catch(e) { console.error(e); alert('Erreur export'); }
+}
+
+// ── Export PDF ──
+async function exportLogsPDF() {
+  try {
+    const res = await apiRequest('http://localhost:3000/api/historique/logs?limit=1000');
+    const data = await res.json();
+    if (!data.data || !data.data.length) { alert('Aucune donnée'); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'landscape' });
+    doc.setFontSize(14); doc.text('Historique des activités - ANSI', 14, 14);
+    doc.setFontSize(9); doc.text('Exporté le ' + new Date().toLocaleString('fr-FR'), 14, 20);
+    doc.autoTable({
+      head: [['Date & Heure', 'Action', 'Utilisateur', 'Détails', 'IP']],
+      body: data.data.map(l => {
+        const date = new Date(l.date_action).toLocaleString('fr-FR');
+        const user = l.utilisateur_nom ? ((l.utilisateur_prenom||'') + ' ' + l.utilisateur_nom).trim() : (l.utilisateur_login||'Système');
+        return [date, l.action||'-', user, l.details||'-', l.ip_adresse||'-'];
+      }),
+      startY: 25, theme: 'striped',
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [10, 37, 64], textColor: 255 }
+    });
+    doc.save('logs_' + new Date().toISOString().slice(0,10) + '.pdf');
+  } catch(e) { console.error(e); alert('Erreur export PDF'); }
+}
+
+// ── Modale générique ──
+function showConfirmModal({ icon, title, body, inputId, inputPlaceholder, confirmText, onConfirm }) {
+  const overlay = document.createElement('div');
+  overlay.className = 'danger-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,37,64,0.6);backdrop-filter:blur(6px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:20px;width:100%;max-width:400px;padding:28px;box-shadow:0 24px 64px rgba(0,0,0,0.3);font-family:'Outfit',sans-serif;text-align:center">
+      <div style="width:56px;height:56px;background:rgba(220,38,38,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:#dc2626">${icon}</div>
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:800;color:#0a2540;margin-bottom:8px">${title}</h3>
+      <div style="font-size:13px;color:#64748b;margin-bottom:16px;line-height:1.6">${body}</div>
+      <p style="font-size:12px;color:#94a3b8;margin-bottom:10px">Tapez <strong>${confirmText}</strong> pour confirmer :</p>
+      <input id="${inputId}" type="text" placeholder="${inputPlaceholder}" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;text-align:center;outline:none;font-family:inherit;margin-bottom:14px">
+      <div style="display:flex;gap:10px">
+        <button onclick="document.querySelector('.danger-overlay').remove()" style="flex:1;padding:11px;background:#f0f4f9;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;color:#475569;font-family:inherit">Annuler</button>
+        <button id="btnConfirmDanger" style="flex:1;padding:11px;background:linear-gradient(135deg,#dc2626,#f87171);border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;color:#fff;font-family:inherit">Confirmer</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.onclick = e => { if(e.target === overlay) overlay.remove(); };
+  document.getElementById('btnConfirmDanger').onclick = () => {
+    const input = document.getElementById(inputId);
+    if (!input || input.value.trim() !== confirmText) {
+      input.style.borderColor = '#dc2626';
+      input.value = '';
+      input.placeholder = `Tapez ${confirmText} exactement`;
+      return;
+    }
+    overlay.remove();
+    onConfirm();
+  };
+  setTimeout(() => document.getElementById(inputId)?.focus(), 100);
+}
+
+// ── Réinitialiser système ──
+function confirmerReset() {
+  showConfirmModal({
+    icon: '<i class="fas fa-redo"></i>',
+    title: 'Réinitialiser le système ?',
+    body: `Cette action supprimera <strong>tous les comptes utilisateurs</strong>.<br>
+           Le système retournera au setup initial.<br>
+           <span style="color:#0d9e8e;font-weight:600">✓ Visiteurs, stagiaires, données conservés</span><br>
+           <span style="color:#dc2626;font-weight:600">✗ Action irréversible</span>`,
+    inputId: 'resetInput',
+    inputPlaceholder: 'RESET',
+    confirmText: 'RESET',
+    onConfirm: executerReset
+  });
+}
+
+async function executerReset() {
+  try {
+    const res = await apiRequest('http://localhost:3000/api/auth/reset-system', { method:'DELETE' });
+    if (res.ok) {
+      localStorage.clear();
+      afficherSucces('🔄', 'Système réinitialisé', 'Redirection vers le setup...', 'setup.html');
+    } else {
+      const e = await res.json();
+      alert(e.message || 'Erreur lors de la réinitialisation');
+    }
+  } catch(e) { alert('Erreur réseau'); }
+}
+
+// ── Effacer données ──
+function confirmerClearData() {
+  showConfirmModal({
+    icon: '<i class="fas fa-trash"></i>',
+    title: 'Effacer toutes les données ?',
+    body: `Cette action supprimera :<br>
+           <strong>Visiteurs, Stagiaires, Pointages, Logs</strong><br>
+           <span style="color:#0d9e8e;font-weight:600">✓ Comptes utilisateurs conservés</span><br>
+           <span style="color:#0d9e8e;font-weight:600">✓ Directions conservées</span><br>
+           <span style="color:#dc2626;font-weight:600">✗ Action irréversible</span>`,
+    inputId: 'clearInput',
+    inputPlaceholder: 'EFFACER',
+    confirmText: 'EFFACER',
+    onConfirm: executerClearData
+  });
+}
+
+async function executerClearData() {
+  try {
+    const res = await apiRequest('http://localhost:3000/api/auth/clear-data', { method:'DELETE' });
+    if (res.ok) {
+      afficherSucces('✅', 'Données effacées', 'Redirection...', 'dashboard.html');
+    } else {
+      const e = await res.json();
+      alert(e.message || 'Erreur lors de la suppression');
+    }
+  } catch(e) { alert('Erreur réseau'); }
+}
+
+// ── Écran de succès ──
+function afficherSucces(emoji, titre, sous, url) {
+  const msg = document.createElement('div');
+  msg.style.cssText = 'position:fixed;inset:0;background:linear-gradient(135deg,#020f1f,#071e3d);z-index:99999;display:flex;align-items:center;justify-content:center;color:#fff;font-family:Outfit,sans-serif;flex-direction:column;gap:16px';
+  msg.innerHTML = `<div style="font-size:52px">${emoji}</div><div style="font-size:20px;font-weight:700">${titre}</div><div style="font-size:13px;color:rgba(255,255,255,0.6)">${sous}</div>`;
+  document.body.appendChild(msg);
+  setTimeout(() => window.location.href = url, 2000);
+}
+</script>
+</body>
+</html>

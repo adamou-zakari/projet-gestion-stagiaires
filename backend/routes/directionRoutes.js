@@ -30,19 +30,52 @@ router.post('/', authMiddleware, roleMiddleware(['admin']), async (req, res) => 
     }
 });
 
+// ─── Modifier une direction ───────────────────────────────────────────────────
+router.put('/:id', authMiddleware, roleMiddleware(['admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nom } = req.body;
+
+        if (!nom || !nom.trim()) {
+            return res.status(400).json({ message: 'Le nom est requis' });
+        }
+
+        // Vérifier que la direction existe
+        const [existing] = await db.query('SELECT id FROM directions WHERE id = ?', [id]);
+        if (existing.length === 0) {
+            return res.status(404).json({ message: 'Direction non trouvée' });
+        }
+
+        // Vérifier qu'un autre enregistrement n'a pas déjà ce nom
+        const [duplicate] = await db.query(
+            'SELECT id FROM directions WHERE nom = ? AND id != ?', [nom.trim(), id]
+        );
+        if (duplicate.length > 0) {
+            return res.status(400).json({ message: 'Ce nom de direction existe déjà' });
+        }
+
+        await db.query('UPDATE directions SET nom = ? WHERE id = ?', [nom.trim(), id]);
+        res.json({ message: 'Direction modifiée avec succès' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
 // Supprimer une direction
 router.delete('/:id', authMiddleware, roleMiddleware(['admin']), async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         // Vérifier si des employés sont dans cette direction
         const [employes] = await db.query('SELECT COUNT(*) as total FROM employes WHERE direction_id = ?', [id]);
         if (employes[0].total > 0) {
-            return res.status(400).json({ 
-                message: `Impossible : ${employes[0].total} employé(s) dans cette direction` 
+            return res.status(400).json({
+                message: `Impossible : ${employes[0].total} employé(s) dans cette direction`
             });
         }
-        
+
         const [result] = await db.query('DELETE FROM directions WHERE id = ?', [id]);
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Direction non trouvée' });

@@ -1,539 +1,407 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accueil Agent — Pointage Stagiaires</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        .agent-container {
-            max-width: 1300px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .top-bar-agent {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 14px 24px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-        }
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .logo-area img {
-            height: 52px;
-            width: auto;
-            object-fit: contain;
-            border-radius: 8px;
-        }
-        .logo-area h1 {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--text-primary);
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        .logo-icon { color: #06b6d4; }
-        .agent-info { display: flex; align-items: center; gap: 12px; }
-        .top-bar-center { text-align: center; }
-        .agent-badge {
-            background: linear-gradient(135deg,#06b6d4,#0891b2);
-            color: #fff;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .clock-date { font-size: 12px; color: var(--text-muted); }
-        .clock-time {
-            font-size: 22px;
-            font-weight: 700;
-            color: #06b6d4;
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
-            gap: 14px;
-            margin-bottom: 20px;
-        }
-        .stat-box {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 20px;
-            text-align: center;
-        }
-        .stat-box .stat-num {
-            font-size: 36px;
-            font-weight: 700;
-            font-family: 'Space Grotesk', sans-serif;
-            color: var(--text-primary);
-        }
-        .stat-box .stat-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 4px;
-        }
-        .stat-box:nth-child(1) { border-top: 3px solid var(--accent-1); }
-        .stat-box:nth-child(2) { border-top: 3px solid var(--accent-3); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pointage stagiaires — ANSI</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+/* Horloge */
+.clock-box { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-sm); padding:6px 16px; text-align:center; flex-shrink:0; }
+.clock-date { font-size:10px; color:var(--text-3); font-weight:500; }
+.clock-time { font-size:16px; font-weight:700; color:var(--blue); letter-spacing:.5px; }
 
-        .search-agent { position: relative; margin-bottom: 16px; }
-        .search-agent i.ico {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #06b6d4;
-            font-size: 15px;
-            pointer-events: none;
-        }
-        .search-agent input {
-            width: 100%;
-            padding: 13px 20px 13px 48px;
-            background: var(--bg-card);
-            border: 1.5px solid rgba(6,182,212,0.2);
-            border-radius: 12px;
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: 'Outfit', sans-serif;
-            outline: none;
-            transition: all 0.2s;
-            box-sizing: border-box;
-        }
-        .search-agent input:focus {
-            border-color: #06b6d4;
-            box-shadow: 0 0 0 3px rgba(6,182,212,0.1);
-        }
-        .search-agent input::placeholder { color: var(--text-muted); }
+/* Stats */
+.stats-row { display:flex; gap:16px; flex-wrap:wrap; }
+.stat-box { background:var(--surface); border-radius:20px; padding:16px 24px; border:1px solid var(--border); box-shadow:var(--shadow-sm); text-align:center; min-width:130px; }
+.stat-box .num { font-family:'Space Grotesk',sans-serif; font-size:36px; font-weight:800; color:var(--text-1); line-height:1; letter-spacing:-1px; }
+.stat-box .lbl { font-size:10px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
 
-        .agent-table-wrap {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            overflow: hidden;
-        }
-        .agent-table { width: 100%; border-collapse: collapse; }
-        .agent-table th {
-            padding: 12px 16px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            background: var(--bg-deep);
-            border-bottom: 1px solid var(--border);
-            text-align: left;
-        }
-        .agent-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(31,45,69,0.5);
-            font-size: 14px;
-            color: var(--text-secondary);
-            vertical-align: middle;
-        }
-        .agent-table tr:last-child td { border-bottom: none; }
-        .agent-table tr:hover td { background: rgba(6,182,212,0.03); color: var(--text-primary); }
+/* Barre de recherche */
+.search-bar { display:flex; align-items:center; gap:10px; background:var(--surface); border:1.5px solid var(--border); border-radius:40px; padding:10px 18px; transition:border-color .2s; box-shadow:var(--shadow-sm); }
+.search-bar:focus-within { border-color:var(--blue); box-shadow:0 0 0 3px rgba(22,113,217,0.1); }
+.search-bar i { color:var(--text-3); font-size:15px; }
+.search-bar input { border:none; outline:none; font-size:14px; background:transparent; flex:1; color:var(--text-1); font-family:inherit; }
+.search-bar input::placeholder { color:var(--text-3); }
 
-        .person-cell { display: flex; align-items: center; gap: 12px; }
-        .person-initials {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
-            color: #fff;
-            flex-shrink: 0;
-            background: linear-gradient(135deg,#3b82f6,#1d4ed8);
-        }
-        .person-cell-info .name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
-        .person-cell-info .sub  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+/* Table */
+.agent-card { background:var(--surface); border-radius:var(--r-lg); border:1px solid var(--border); box-shadow:var(--shadow-sm); overflow:visible; }
+.agent-table-wrapper { width:100%; overflow-x:auto; border-radius:var(--r-lg); }
+.agent-table { width:100%; border-collapse:collapse; font-size:13px; min-width:600px; }
+.agent-table th,.agent-table td { padding:12px 14px; text-align:left; border-bottom:1px solid var(--surface-2); vertical-align:middle; }
+.agent-table th { background:var(--surface-2); font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-3); letter-spacing:.5px; }
+.agent-table tbody tr:last-child td { border-bottom:none; }
+.agent-table tbody tr:hover td { background:rgba(22,113,217,0.03); }
 
-        .statut-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .statut-present {
-            background: rgba(16,185,129,0.15);
-            color: #10b981;
-            border: 1px solid rgba(16,185,129,0.25);
-        }
-        .statut-absent {
-            background: rgba(107,114,128,0.1);
-            color: #6b7280;
-            border: 1px solid rgba(107,114,128,0.2);
-        }
-        .statut-absent i { font-size: 8px; }
+/* Cellule personne */
+.person-cell { display:flex; align-items:center; gap:12px; }
+.person-initials { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; background:linear-gradient(135deg,var(--navy),var(--blue)); }
+.person-name { font-size:13px; font-weight:600; color:var(--text-1); }
+.person-sub  { font-size:11px; color:var(--text-3); margin-top:2px; }
 
-        .dot-live {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #10b981;
-            animation: pulse-g 1.8s infinite;
-        }
-        @keyframes pulse-g {
-            0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
-            50%      { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
-        }
+/* Badges statut */
+.badge-present { display:inline-flex; align-items:center; gap:6px; background:rgba(13,158,142,0.1); color:#0a7a6e; border:1px solid rgba(13,158,142,0.2); padding:5px 12px; border-radius:20px; font-size:11px; font-weight:600; }
+.badge-present::before { content:''; width:6px; height:6px; border-radius:50%; background:#0d9e8e; animation:pulseTeal 1.8s infinite; flex-shrink:0; }
+.badge-absent { display:inline-flex; align-items:center; gap:6px; background:var(--surface-2); color:var(--text-3); border:1px solid var(--border); padding:5px 12px; border-radius:20px; font-size:11px; font-weight:600; }
+.heure-entree { font-size:10px; color:var(--teal); margin-top:4px; display:block; }
 
-        .btn-entree, .btn-sortie {
-            padding: 8px 18px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            font-family: 'Outfit', sans-serif;
-            cursor: pointer;
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.18s;
-        }
-        .btn-entree {
-            background: rgba(16,185,129,0.15);
-            color: #10b981;
-            border: 1.5px solid rgba(16,185,129,0.3);
-        }
-        .btn-entree:hover {
-            background: rgba(16,185,129,0.28);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(16,185,129,0.2);
-        }
-        .btn-sortie {
-            background: rgba(239,68,68,0.12);
-            color: #f87171;
-            border: 1.5px solid rgba(239,68,68,0.25);
-        }
-        .btn-sortie:hover {
-            background: rgba(239,68,68,0.22);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(239,68,68,0.18);
-        }
+/* Boutons pointage */
+.btn-entree,.btn-sortie { border:none; border-radius:30px; padding:6px 16px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all .2s; font-family:inherit; }
+.btn-entree { background:rgba(22,113,217,0.1); color:var(--blue); border:1px solid rgba(22,113,217,0.25); }
+.btn-entree:hover { background:rgba(22,113,217,0.2); transform:translateY(-1px); }
+.btn-sortie { background:rgba(220,38,38,0.08); color:var(--red); border:1px solid rgba(220,38,38,0.22); }
+.btn-sortie:hover { background:rgba(220,38,38,0.15); transform:translateY(-1px); }
 
-        .heure-entree { font-size: 11px; color: #10b981; margin-top: 3px; }
-        .logout-btn   { width: auto; padding: 8px 16px; font-size: 13px; }
+/* Pagination */
+.pagination { display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:20px; flex-wrap:wrap; }
+.pagination button { background:var(--surface); border:1px solid var(--border); border-radius:30px; padding:6px 12px; font-size:12px; font-weight:500; cursor:pointer; transition:all .15s; color:var(--text-2); font-family:inherit; }
+.pagination button:hover:not(:disabled) { background:var(--blue-dim); border-color:var(--blue); color:var(--blue); }
+.pagination button:disabled { opacity:.4; cursor:not-allowed; }
+.pagination .page-active { background:var(--blue); border-color:var(--blue); color:#fff; }
+.pagination select { background:var(--surface); border:1px solid var(--border); border-radius:30px; padding:6px 10px; font-size:12px; color:var(--text-1); outline:none; cursor:pointer; font-family:inherit; }
 
-        .toast {
-            position: fixed;
-            bottom: 28px;
-            right: 28px;
-            color: #fff;
-            padding: 12px 22px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 14px;
-            z-index: 9999;
-            animation: slideIn 0.3s ease;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-            max-width: 320px;
-        }
-        .toast.success { background: #10b981; }
-        .toast.error   { background: #ef4444; }
-        @keyframes slideIn {
-            from { transform: translateX(110%); opacity: 0; }
-            to   { transform: translateX(0);    opacity: 1; }
-        }
-        .empty-row td { text-align: center; padding: 40px !important; color: var(--text-muted); }
-
-        .footer-buttons {
-            display: flex;
-            justify-content: center;
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
-        .btn-back {
-            background: rgba(148,163,184,0.2);
-            color: #cbd5e1;
-            border: 1px solid rgba(148,163,184,0.3);
-            padding: 12px 28px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s;
-            font-size: 14px;
-        }
-        .btn-back:hover { background: rgba(148,163,184,0.3); transform: translateY(-2px); color: white; }
-
-        @media (max-width: 768px) { .top-bar-agent { flex-direction: column; gap: 10px; } }
-    </style>
+@keyframes pulseTeal { 0%,100%{box-shadow:0 0 0 0 rgba(13,158,142,0.4)} 50%{box-shadow:0 0 0 5px rgba(13,158,142,0)} }
+@media(max-width:700px){ .stats-row{flex-direction:column} .agent-table th:nth-child(2),.agent-table td:nth-child(2){display:none} }
+</style>
 </head>
 <body>
-    <div class="agent-container">
 
-        <!-- TOP BAR -->
-        <div class="top-bar-agent">
-            <div class="logo-area">
-                <img src="logo.png" alt="ANSI Niger" onerror="this.style.display='none'">
-                <h1><i class="fas fa-clipboard-list logo-icon"></i> Pointage des stagiaires</h1>
-            </div>
-            <div class="top-bar-center">
-                <div id="clockDate" class="clock-date"></div>
-                <div id="clockTime" class="clock-time"></div>
-            </div>
-            <div class="agent-info">
-                <span class="agent-badge">
-                    <i class="fas fa-user-shield"></i>
-                    <span id="agentName">Agent</span>
-                </span>
-                <button type="button" class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Quitter
-                </button>
-            </div>
-        </div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><img src="logo.png" alt="ANSI" onerror="this.style.display='none'"></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label" data-i18n="principal">Principal</div>
+    <a class="sidebar-link"  href="dashboard.html"><i class="fas fa-th-large"></i><span data-i18n="tableau_bord">Tableau de bord</span></a>
+    <a class="sidebar-link" id="btnStagiaires" href="stagiaires.html"><i class="fas fa-user-graduate"></i><span data-i18n="stagiaires">Stagiaires</span></a>
+    <a class="sidebar-link"  href="visiteurs.html"><i class="fas fa-users"></i><span data-i18n="visiteurs">Visiteurs</span></a>
+    <a class="sidebar-link" id="btnEmployes" href="employes.html"><i class="fas fa-id-badge"></i><span data-i18n="employes">Employés</span></a>
+    <a class="sidebar-link" id="btnSecurite" href="securite.html"><i class="fas fa-shield-alt"></i><span data-i18n="agents_securite">Agents de sécurité</span></a>
+    <a class="sidebar-link active"  href="accueil-agent.html"><i class="fas fa-clipboard-check"></i><span data-i18n="pointage_stagiaires">Pointage stagiaires</span></a>
+    <div class="nav-section-label" data-i18n="donnees">Données</div>
+    <a class="sidebar-link"  href="historique.html"><i class="fas fa-history"></i><span data-i18n="historique">Historique</span></a>
+    <a class="sidebar-link"  href="rapports.html"><i class="fas fa-chart-bar"></i><span data-i18n="rapports">Rapports</span></a>
+    <div class="nav-section-label" data-i18n="systeme">Système</div>
+    <a class="sidebar-link"  href="parametres.html"><i class="fas fa-cog"></i><span data-i18n="parametres">Paramètres</span></a>
+    <a class="sidebar-link"  href="profil.html"><i class="fas fa-user-edit"></i><span data-i18n="mon_profil">Mon profil</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user" onclick="window.location.href='profil.html'">
+      <div class="sidebar-avatar" id="sidebarInitials">--</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">—</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">—</div>
+      </div>
+      <i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.25);font-size:10px"></i>
+    </div>
+    <button class="sb-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span data-i18n="deconnexion">Déconnexion</span></button>
+  </div>
+</aside>
 
-        <!-- STATS -->
-        <div class="stats-row">
-            <div class="stat-box">
-                <div class="stat-num" id="statTotal">0</div>
-                <div class="stat-label">Stagiaires actifs</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-num" id="statPresent">0</div>
-                <div class="stat-label">Présents aujourd'hui</div>
-            </div>
-        </div>
+<div class="main-wrapper" id="mainWrapper">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <span class="topbar-title" data-i18n="pointage_stagiaires">Pointage stagiaires</span>
+    </div>
+    <div class="topbar-right">
+      <div class="clock-box">
+        <div class="clock-date" id="clockDate"></div>
+        <div class="clock-time" id="clockTime"></div>
+      </div>
+      <button class="topbar-btn" onclick="window.showNotificationsModal && window.showNotificationsModal()">
+        <i class="fas fa-bell"></i><span class="notif-badge hidden">0</span>
+      </button>
+      <button class="topbar-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
+    </div>
+  </header>
 
-        <!-- RECHERCHE -->
-        <div class="search-agent">
-            <i class="fas fa-search ico"></i>
-            <input type="text" id="searchInput"
-                placeholder="Rechercher par nom, prénom..."
-                oninput="renderTable()">
-        </div>
-
-        <!-- TABLEAU -->
-        <div class="agent-table-wrap">
-            <table class="agent-table">
-                <thead>
-                    <tr>
-                        <th><i class="fas fa-user"></i> Stagiaire</th>
-                        <th><i class="fas fa-phone"></i> Contact</th>
-                        <th><i class="fas fa-circle"></i> Statut</th>
-                        <th><i class="fas fa-bolt"></i> Action</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr class="empty-row">
-                        <td colspan="4"><i class="fas fa-spinner fa-spin"></i> Chargement...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- BOUTON RETOUR -->
-        <div class="footer-buttons">
-            <button class="btn-back" onclick="window.location.href='dashboard.html'">
-                <i class="fas fa-arrow-left"></i> Retour au Dashboard
-            </button>
-        </div>
+  <main class="main-content">
+    <div class="page-header">
+      <h2><i class="fas fa-clipboard-check"></i> <span data-i18n="pointage_jour">Pointage du jour</span></h2>
     </div>
 
-    <script src="script.js"></script>
-    <script>
-        let stagiairesList = [];
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box"><div class="num" id="nbTotal">0</div><div class="lbl" data-i18n="total_stagiaires">Total</div></div>
+      <div class="stat-box"><div class="num" id="nbPresents" style="color:#0d9e8e">0</div><div class="lbl" data-i18n="presents">Présents</div></div>
+      <div class="stat-box"><div class="num" id="nbAbsents" style="color:#94a3b8">0</div><div class="lbl" data-i18n="absent">Absents</div></div>
+      <div class="stat-box"><div class="num" id="nbTermines" style="color:#d97706">0</div><div class="lbl" data-i18n="termines">Terminés</div></div>
+    </div>
 
-        /* ── Horloge ─────────────────────────────────────── */
-        function updateClock() {
-            const now  = new Date();
-            const jours = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
-            const mois  = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-            document.getElementById('clockDate').textContent =
-                `${jours[now.getDay()]} ${now.getDate()} ${mois[now.getMonth()]}`;
-            document.getElementById('clockTime').textContent = now.toLocaleTimeString('fr-FR');
-        }
-        updateClock();
-        setInterval(updateClock, 1000);
+    <!-- Recherche -->
+    <div class="search-bar">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="Rechercher un stagiaire..."
+        data-i18n-placeholder="rechercher_stagiaire"
+        autocomplete="off" autocorrect="off" autocapitalize="off">
+    </div>
 
-        /* ── Chargement stagiaires ───────────────────────── */
-        async function loadStagiaires() {
-            try {
-                const res = await apiRequest('http://localhost:3000/api/stagiaires');
-                if (!res.ok) throw new Error('Réponse non OK');
-                let stagiaires = await res.json();
+    <!-- Table -->
+    <div class="agent-card">
+      <div class="agent-table-wrapper">
+        <table class="agent-table">
+          <thead>
+            <tr>
+              <th data-i18n="stagiaire">STAGIAIRE</th>
+              <th data-i18n="direction_stage">DIRECTION</th>
+              <th data-i18n="statut">STATUT</th>
+              <th data-i18n="actions">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div style="padding:16px 20px">
+        <div class="pagination">
+          <button id="btnPrev" onclick="changePage(currentPage-1)" disabled>‹ Précédent</button>
+          <div id="pageNumbers" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+          <button id="btnNext" onclick="changePage(currentPage+1)" disabled>Suivant ›</button>
+          <select id="perPage" onchange="changePerPage()">
+            <option value="10">10 par page</option>
+            <option value="25">25 par page</option>
+            <option value="50">50 par page</option>
+          </select>
+        </div>
+      </div>
+    </div>
 
-                // ✅ FILTRE : n'afficher que les stagiaires dont date_fin >= aujourd'hui
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
+    <div class="footer-buttons">
+      <button class="btn-back" onclick="window.location.href='dashboard.html'"><i class="fas fa-arrow-left"></i> <span data-i18n="retour_dashboard">Retour au Dashboard</span></button>
+    </div>
+  </main>
 
-                stagiaires = stagiaires.filter(s => {
-                    if (!s.date_fin) return true;           // pas de date fin = toujours actif
-                    const dateFin = new Date(s.date_fin);
-                    dateFin.setHours(0, 0, 0, 0);
-                    return dateFin >= today;                 // garder seulement si non expiré
-                });
+  <footer class="page-footer">
+    <span>© 2026 ANSI — <span data-i18n="footer_droits">Tous droits réservés.</span></span>
+    <span>Version 1.0.0 · <span data-i18n="footer_version">Système de gestion des entrées/sorties</span></span>
+  </footer>
+</div>
 
-                stagiairesList = stagiaires;
-                renderTable();
-            } catch {
-                stagiairesList = [];
-                showToast('❌ Impossible de charger les stagiaires', 'error');
-                renderTable();
-            }
-        }
+<script src="script.js"></script>
+<script src="notifications.js"></script>
+<script src="lang.js"></script>
+<script>
+// ── Variables ──
+let stagiairesList = [], filteredList = [];
+let currentPage = 1, itemsPerPage = 10;
 
-        /* ── Utilitaire présence ─────────────────────────── */
-        function isPresent(stagiaire) {
-            return stagiaire.est_present === true || stagiaire.est_present === 1;
-        }
+// ── Notification locale (toast cloche + liste + badge) ──
+function notifLocale(msg) {
+  if (typeof window.addNotification === 'function') {
+    window.addNotification({ type: 'action', message: msg });
+  } else if (typeof window.showNotifToast === 'function') {
+    window.showNotifToast(msg);
+  }
+}
 
-        /* ── Rendu tableau ───────────────────────────────── */
-        function renderTable() {
-            const tbody  = document.getElementById('tableBody');
-            const search = document.getElementById('searchInput').value.trim().toLowerCase();
+// ── Horloge ──
+function updateClock() {
+  const now  = new Date();
+  const lang = localStorage.getItem('langue') === 'en' ? 'en-GB' : 'fr-FR';
+  const date = now.toLocaleDateString(lang, { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const time = now.toLocaleTimeString(lang, { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const dateEl = document.getElementById('clockDate');
+  const timeEl = document.getElementById('clockTime');
+  if (dateEl) dateEl.textContent = date.charAt(0).toUpperCase() + date.slice(1);
+  if (timeEl) timeEl.textContent = time;
+}
 
-            const filtered = stagiairesList.filter(s =>
-                (s.nom    || '').toLowerCase().includes(search) ||
-                (s.prenom || '').toLowerCase().includes(search)
-            );
+// ── Utilitaires ──
+function isPresent(s) { return s.est_present === true || s.est_present === 1; }
+function estActif(s)  { if(!s.date_fin) return true; return new Date(s.date_fin) >= new Date().setHours(0,0,0,0); }
 
-            document.getElementById('statTotal').textContent   = filtered.length;
-            document.getElementById('statPresent').textContent = filtered.filter(s => isPresent(s)).length;
+// ── Recherche & pagination ──
+function applySearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  filteredList = q === '' ? [...stagiairesList] : stagiairesList.filter(s => {
+    const name = `${s.prenom||''} ${s.nom||''}`.toLowerCase();
+    return name.startsWith(q) || (s.direction||'').toLowerCase().startsWith(q);
+  });
+  currentPage = 1;
+  renderTable();
+  renderPagination();
+}
 
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr class="empty-row"><td colspan="4">
-                    <i class="fas fa-user-graduate"></i> Aucun stagiaire actif</td></tr>`;
-                return;
-            }
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(applySearch, 300);
+});
 
-            tbody.innerHTML = '';
+function changePage(p) {
+  const total = Math.ceil(filteredList.length / itemsPerPage);
+  if (p < 1 || p > total) return;
+  currentPage = p; renderTable(); renderPagination();
+}
+function changePerPage() {
+  itemsPerPage = parseInt(document.getElementById('perPage').value);
+  currentPage = 1; renderTable(); renderPagination();
+}
 
-            filtered.forEach(s => {
-                const present  = isPresent(s);
-                const name     = `${s.prenom || ''} ${s.nom || ''}`.trim() || '—';
-                const initials = `${(s.prenom || '?')[0]}${(s.nom || '?')[0]}`.toUpperCase();
-                const contact  = s.telephone || s.email || '—';
+// ── Rendu ──
+function renderTable() {
+  const start = (currentPage-1) * itemsPerPage;
+  const items = filteredList.slice(start, start + itemsPerPage);
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
 
-                const tr = document.createElement('tr');
+  if (!items.length) {
+    const r = tbody.insertRow(); const c = r.insertCell(0);
+    c.colSpan = 4; c.textContent = t('aucun_stagiaire');
+    c.style.cssText = 'text-align:center;padding:36px;color:#94a3b8';
+    return;
+  }
 
-                // Colonne Nom
-                const tdNom = document.createElement('td');
-                tdNom.innerHTML = `
-                    <div class="person-cell">
-                        <div class="person-initials">${initials}</div>
-                        <div class="person-cell-info">
-                            <div class="name">${name}</div>
-                            <div class="sub">${s.email || ''}</div>
-                        </div>
-                    </div>`;
+  items.forEach(s => {
+    const actif    = estActif(s);
+    const present  = isPresent(s);
+    const initials = getInitials(`${s.prenom||''} ${s.nom||''}`);
+    const name     = `${s.prenom||''} ${s.nom||''}`.trim();
+    const r = tbody.insertRow();
 
-                // Colonne Contact
-                const tdContact = document.createElement('td');
-                tdContact.textContent = contact;
+    r.insertCell(0).innerHTML = `
+      <div class="person-cell">
+        <div class="person-initials">${initials}</div>
+        <div>
+          <div class="person-name">${name}</div>
+          <div class="person-sub">${s.email || ''}</div>
+        </div>
+      </div>`;
 
-                // Colonne Statut
-                const tdStatut = document.createElement('td');
-                if (present) {
-                    const heureEntree = s.derniere_entree
-                        ? new Date(s.derniere_entree).toLocaleTimeString('fr-FR') : null;
-                    tdStatut.innerHTML = `
-                        <span class="statut-badge statut-present">
-                            <span class="dot-live"></span> Présent
-                        </span>
-                        ${heureEntree ? `<div class="heure-entree"><i class="fas fa-clock"></i> ${heureEntree}</div>` : ''}`;
-                } else {
-                    tdStatut.innerHTML = `<span class="statut-badge statut-absent">
-                        <i class="fas fa-circle"></i> Absent</span>`;
-                }
+    r.insertCell(1).textContent = s.direction || '-';
 
-                // Colonne Action
-                const tdAction = document.createElement('td');
-                if (present) {
-                    const btnSortie = document.createElement('button');
-                    btnSortie.className = 'btn-sortie';
-                    btnSortie.innerHTML = '<i class="fas fa-sign-out-alt"></i> SORTIE';
-                    btnSortie.addEventListener('click', () => enregistrerSortie(s.id, name));
-                    tdAction.appendChild(btnSortie);
-                } else {
-                    const btnEntree = document.createElement('button');
-                    btnEntree.className = 'btn-entree';
-                    btnEntree.innerHTML = '<i class="fas fa-sign-in-alt"></i> ENTRÉE';
-                    btnEntree.addEventListener('click', () => enregistrerEntree(s.id, name));
-                    tdAction.appendChild(btnEntree);
-                }
+    if (!actif) {
+      r.insertCell(2).innerHTML = `<span class="badge-absent"><i class="fas fa-check"></i> ${t('termine')}</span>`;
+    } else if (present) {
+      const heure = s.heure_entree ? `<span class="heure-entree">${t('entree_btn')} à ${s.heure_entree.substring(0,5)}</span>` : '';
+      r.insertCell(2).innerHTML = `<span class="badge-present">${t('presents')}</span>${heure}`;
+    } else {
+      r.insertCell(2).innerHTML = `<span class="badge-absent"><i class="fas fa-circle" style="font-size:6px"></i> ${t('absent')}</span>`;
+    }
 
-                tr.appendChild(tdNom);
-                tr.appendChild(tdContact);
-                tr.appendChild(tdStatut);
-                tr.appendChild(tdAction);
-                tbody.appendChild(tr);
-            });
-        }
+    const td = r.insertCell(3);
+    if (!actif) {
+      td.innerHTML = `<span style="font-size:11px;color:var(--text-3)">${t('stage_termine')}</span>`;
+    } else if (present) {
+      const btn = document.createElement('button');
+      btn.className = 'btn-sortie';
+      btn.innerHTML = `<i class="fas fa-sign-out-alt"></i> ${t('sortie_btn')}`;
+      btn.onclick = () => enregistrerSortie(s.id, name);
+      td.appendChild(btn);
+    } else {
+      const btn = document.createElement('button');
+      btn.className = 'btn-entree';
+      btn.innerHTML = `<i class="fas fa-sign-in-alt"></i> ${t('entree_btn')}`;
+      btn.onclick = () => enregistrerEntree(s.id, name);
+      td.appendChild(btn);
+    }
+  });
+}
 
-        /* ── Pointage ────────────────────────────────────── */
-        async function enregistrerEntree(personId, name) {
-            try {
-                const res = await apiRequest(
-                    `http://localhost:3000/api/stagiaires/${personId}/entree`, { method: 'POST' });
-                if (res.ok) {
-                    showToast(`✅ ${name} — Entrée enregistrée`);
-                    await loadStagiaires();
-                } else {
-                    const err = await res.json();
-                    showToast(`❌ ${err.message || 'Erreur entrée'}`, 'error');
-                }
-            } catch { showToast('❌ Erreur de connexion', 'error'); }
-        }
+function renderPagination() {
+  const total = Math.ceil(filteredList.length / itemsPerPage);
+  document.getElementById('btnPrev').disabled = currentPage === 1;
+  document.getElementById('btnNext').disabled = currentPage === total || total === 0;
+  const container = document.getElementById('pageNumbers');
+  container.innerHTML = '';
+  for (let i = 1; i <= total; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    if (i === currentPage) btn.classList.add('page-active');
+    btn.onclick = () => changePage(i);
+    container.appendChild(btn);
+  }
+}
 
-        async function enregistrerSortie(personId, name) {
-            try {
-                const res = await apiRequest(
-                    `http://localhost:3000/api/stagiaires/${personId}/sortie`, { method: 'POST' });
-                if (res.ok) {
-                    showToast(`✅ ${name} — Sortie enregistrée`);
-                    await loadStagiaires();
-                } else {
-                    const err = await res.json();
-                    showToast(`❌ ${err.message || 'Erreur sortie'}`, 'error');
-                }
-            } catch { showToast('❌ Erreur de connexion', 'error'); }
-        }
+function updateStats() {
+  const actifs   = stagiairesList.filter(s => estActif(s));
+  const presents = actifs.filter(s => isPresent(s));
+  const absents  = actifs.filter(s => !isPresent(s));
+  const termines = stagiairesList.filter(s => !estActif(s));
+  document.getElementById('nbTotal').textContent   = stagiairesList.length;
+  document.getElementById('nbPresents').textContent = presents.length;
+  document.getElementById('nbAbsents').textContent  = absents.length;
+  document.getElementById('nbTermines').textContent = termines.length;
+}
 
-        /* ── Toast ───────────────────────────────────────── */
-        function showToast(message, type = 'success') {
-            const t = document.createElement('div');
-            t.className = `toast ${type}`;
-            t.textContent = message;
-            document.body.appendChild(t);
-            setTimeout(() => t.remove(), 3000);
-        }
+// ── Pointage ──
+async function enregistrerEntree(id, name) {
+  // Mise à jour locale immédiate
+  const idx = stagiairesList.findIndex(s => s.id === id);
+  if (idx !== -1) {
+    stagiairesList[idx].est_present = true;
+    stagiairesList[idx].heure_entree = new Date().toTimeString().substring(0,8);
+    updateStats();
+    applySearch();
+  }
+  try {
+    const res = await apiRequest(`http://localhost:3000/api/stagiaires/${id}/entree`, { method:'POST' });
+    if (res.ok) {
+      notifLocale(`Entrée : ${name}`);
+      chargerDonnees();
+    } else {
+      const e = await res.json();
+      showToast('❌ ' + (e.message||'Erreur'), 'error');
+      chargerDonnees();
+    }
+  } catch {
+    showToast('❌ Erreur réseau', 'error');
+    chargerDonnees();
+  }
+}
 
-        /* ── Init ────────────────────────────────────────── */
-        async function init() {
-            const token = checkAuth();
-            if (!token) return;
-            const user = getUser();
-            if (user) {
-                document.getElementById('agentName').textContent =
-                    `${user.prenom || ''} ${user.nom || ''}`.trim() || user.email || 'Agent';
-            }
-            await loadStagiaires();
-        }
+async function enregistrerSortie(id, name) {
+  // Mise à jour locale immédiate
+  const idx = stagiairesList.findIndex(s => s.id === id);
+  if (idx !== -1) {
+    stagiairesList[idx].est_present = false;
+    stagiairesList[idx].heure_entree = null;
+    updateStats();
+    applySearch();
+  }
+  try {
+    const res = await apiRequest(`http://localhost:3000/api/stagiaires/${id}/sortie`, { method:'POST' });
+    if (res.ok) {
+      notifLocale(`Sortie : ${name}`);
+      chargerDonnees();
+    } else {
+      const e = await res.json();
+      showToast('❌ ' + (e.message||'Erreur'), 'error');
+      chargerDonnees();
+    }
+  } catch {
+    showToast('❌ Erreur réseau', 'error');
+    chargerDonnees();
+  }
+}
 
-        init();
-    </script>
+// ── Chargement données ──
+async function chargerDonnees() {
+  try {
+    const res = await apiRequest('http://localhost:3000/api/stagiaires');
+    stagiairesList = (await res.json()).map(s => ({
+      ...s,
+      est_present: s.est_present === 1 || s.est_present === true
+    }));
+    updateStats();
+    applySearch();
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// ── Initialisation ──
+async function init() {
+  if (!checkAuth()) return;       // 1. Auth
+  initSidebarUser();              // 2. Sidebar
+  applyTranslations();            // 3. Langue
+  initNotifications(apiRequest); // 4. Notifications
+  updateClock();                  // 5. Horloge
+  setInterval(updateClock, 1000);
+  await chargerDonnees();        // 6. Données
+}
+
+init();
+</script>
 </body>
 </html>

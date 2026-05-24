@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANSI Niger — Configuration initiale</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; overflow:hidden; }
+    body {
+      display:flex; align-items:center; justify-content:center;
+      height:100vh; width:100vw;
+      background:linear-gradient(135deg,#020f1f 0%,#071e3d 40%,#0a2d5a 70%,#0d3a72 100%);
+      font-family:'Outfit',sans-serif; position:relative;
+    }
+    .bg-dots {
+      position:absolute; inset:0; pointer-events:none;
+      background-image:radial-gradient(rgba(255,255,255,0.05) 1px,transparent 1px);
+      background-size:28px 28px;
+    }
+    .setup-card {
+      position:relative; z-index:10; background:#fff;
+      border-radius:24px; width:88%; max-width:420px;
+      padding:22px 24px 18px;
+      box-shadow:0 32px 80px rgba(2,10,30,0.55);
+      overflow:hidden;
+    }
+    .logo-wrap {
+      width:56px; height:56px; background:#f0f4fa; border-radius:14px;
+      display:flex; align-items:center; justify-content:center; margin:0 auto 10px;
+    }
+    .logo-wrap img { width:42px; height:42px; object-fit:contain; }
+    .step-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      background:rgba(22,113,217,0.1); color:#1671d9;
+      padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; margin-bottom:6px;
+    }
+    .card-head { text-align:center; margin-bottom:10px; }
+    .card-head h1 { font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:800; color:#0a2540; margin-bottom:3px; }
+    .card-head p { font-size:11px; color:#94a3b8; line-height:1.4; }
+
+    .sep { display:flex; align-items:center; gap:8px; margin:8px 0 6px; }
+    .sep span { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#94a3b8; white-space:nowrap; }
+    .sep::before,.sep::after { content:''; flex:1; height:1px; background:#e2e8f0; }
+
+    .form-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; width:100%; }
+    .form-group { margin-bottom:7px; min-width:0; }
+    .form-group label { font-size:11px; font-weight:600; color:#475569; display:block; margin-bottom:3px; }
+
+    .input-box {
+      display:flex; align-items:center; width:100%; min-width:0;
+      border:1.5px solid #e2e8f0; border-radius:10px;
+      background:#f8fafc; transition:all .2s; overflow:hidden;
+    }
+    .input-box:focus-within { border-color:#1671d9; box-shadow:0 0 0 3px rgba(22,113,217,0.1); background:#fff; }
+    .input-ico {
+      width:34px; height:36px; display:flex; align-items:center; justify-content:center;
+      color:#1671d9; border-right:1px solid #e2e8f0; flex-shrink:0; font-size:12px;
+    }
+    .input-box input {
+      flex:1 1 auto; width:100%; min-width:0;
+      height:36px; border:none; outline:none;
+      padding:0 10px; font-size:12px; background:transparent; font-family:'Outfit',sans-serif;
+    }
+    .eye-btn { width:34px; height:36px; background:none; border:none; color:#94a3b8; cursor:pointer; flex-shrink:0; }
+
+    .pwd-bar { height:3px; border-radius:3px; background:#e2e8f0; overflow:hidden; margin-top:3px; }
+    .pwd-bar-fill { height:100%; width:0%; border-radius:3px; transition:all .3s; }
+    .pwd-label { font-size:10px; color:#94a3b8; margin-top:1px; }
+
+    .btn-setup {
+      width:100%; height:42px; background:linear-gradient(135deg,#1671d9,#3b9eff);
+      color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:700;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      gap:8px; margin-top:10px; transition:all 0.2s; font-family:'Outfit',sans-serif;
+      box-shadow:0 4px 14px rgba(22,113,217,0.3);
+    }
+    .btn-setup:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(22,113,217,0.4); }
+    .btn-setup:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
+    .error-box {
+      display:none; background:rgba(220,38,38,0.07); border:1px solid rgba(220,38,38,0.2);
+      color:#dc2626; padding:7px 12px; border-radius:8px;
+      font-size:11px; margin-top:6px; text-align:center;
+    }
+
+    .alt-screen { display:none; text-align:center; padding:10px 0; }
+    .alt-screen h2 { font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:800; color:#0a2540; margin-bottom:6px; }
+    .alt-screen p { font-size:12px; color:#64748b; margin-bottom:16px; }
+    .btn-goto {
+      display:inline-flex; align-items:center; gap:8px;
+      background:linear-gradient(135deg,#1671d9,#3b9eff); color:#fff;
+      padding:10px 22px; border-radius:10px; font-size:13px; font-weight:700;
+      text-decoration:none; transition:all .2s; font-family:'Outfit',sans-serif;
+    }
+    @media (max-width:600px) { .form-row { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="bg-dots"></div>
+  <div class="setup-card">
+
+    <!-- Formulaire -->
+    <div id="setupForm">
+      <div class="logo-wrap">
+        <img src="logo.png" alt="ANSI" onerror="this.style.display='none'">
+      </div>
+      <div class="card-head">
+        <div class="step-badge"><i class="fas fa-magic"></i> Configuration initiale</div>
+        <h1>Créer le compte administrateur</h1>
+        <p>Ce compte aura accès total au système.</p>
+      </div>
+
+      <div class="sep"><span><i class="fas fa-user"></i> Identité</span></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom *</label>
+          <div class="input-box">
+            <div class="input-ico"><i class="fas fa-user"></i></div>
+            <input type="text" id="nom" placeholder="Nom">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Prénom *</label>
+          <div class="input-box">
+            <div class="input-ico"><i class="fas fa-user"></i></div>
+            <input type="text" id="prenom" placeholder="Prénom">
+          </div>
+        </div>
+      </div>
+
+      <div class="sep"><span><i class="fas fa-lock"></i> Accès</span></div>
+      <div class="form-group">
+        <label>Identifiant de connexion *</label>
+        <div class="input-box">
+          <div class="input-ico"><i class="fas fa-at"></i></div>
+          <input type="text" id="login" placeholder="Identifiant unique">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mot de passe *</label>
+          <div class="input-box">
+            <div class="input-ico"><i class="fas fa-key"></i></div>
+            <input type="password" id="password" placeholder="Min. 6 caractères" oninput="checkStrength(this.value)">
+            <button type="button" class="eye-btn" onclick="toggleEye('password',this)"><i class="fas fa-eye-slash"></i></button>
+          </div>
+          <div class="pwd-bar"><div class="pwd-bar-fill" id="pwdBar"></div></div>
+          <div class="pwd-label" id="pwdLabel">Entrez un mot de passe</div>
+        </div>
+        <div class="form-group">
+          <label>Confirmer *</label>
+          <div class="input-box">
+            <div class="input-ico"><i class="fas fa-key"></i></div>
+            <input type="password" id="confirm" placeholder="Confirmer">
+            <button type="button" class="eye-btn" onclick="toggleEye('confirm',this)"><i class="fas fa-eye-slash"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-setup" onclick="createAdmin()" id="btnSetup">
+        <i class="fas fa-rocket"></i> Créer le compte et démarrer
+      </button>
+      <div class="error-box" id="errorBox"></div>
+    </div>
+
+    <!-- Succès -->
+    <div class="alt-screen" id="successScreen">
+      <div style="font-size:52px;margin-bottom:12px">✅</div>
+      <h2>Système configuré !</h2>
+      <p>Compte administrateur créé avec succès.<br>Vous pouvez maintenant vous connecter.</p>
+      <a href="index.html" class="btn-goto"><i class="fas fa-sign-in-alt"></i> Se connecter</a>
+    </div>
+
+    <!-- Déjà configuré -->
+    <div class="alt-screen" id="alreadyDone">
+      <div style="font-size:52px;margin-bottom:12px">🔒</div>
+      <h2>Système déjà configuré</h2>
+      <p>Un compte administrateur existe déjà.<br>Veuillez vous connecter.</p>
+      <a href="index.html" class="btn-goto"><i class="fas fa-sign-in-alt"></i> Se connecter</a>
+    </div>
+  </div>
+
+  <script>
+    async function checkSetup() {
+      try {
+        const res  = await fetch('http://localhost:3000/api/auth/setup/check');
+        const data = await res.json();
+        if (data.configured) {
+          document.getElementById('setupForm').style.display   = 'none';
+          document.getElementById('alreadyDone').style.display = 'block';
+          setTimeout(() => window.location.href = 'index.html', 3000);
+        }
+      } catch(e) {}
+    }
+    checkSetup();
+
+    function checkStrength(pwd) {
+      const bar = document.getElementById('pwdBar');
+      const lbl = document.getElementById('pwdLabel');
+      if (!pwd) { bar.style.width='0%'; lbl.textContent='Entrez un mot de passe'; bar.style.background='#e2e8f0'; return; }
+      let s = 0;
+      if (pwd.length >= 6) s++;
+      if (pwd.length >= 10) s++;
+      if (/[A-Z]/.test(pwd)) s++;
+      if (/[0-9]/.test(pwd)) s++;
+      if (/[^A-Za-z0-9]/.test(pwd)) s++;
+      const lvl = [{w:'20%',c:'#dc2626',t:'Très faible'},{w:'40%',c:'#d97706',t:'Faible'},{w:'60%',c:'#3b9eff',t:'Moyen'},{w:'80%',c:'#1671d9',t:'Fort'},{w:'100%',c:'#0d9e8e',t:'Très fort'}][s-1]||{w:'20%',c:'#dc2626',t:'Très faible'};
+      bar.style.width=lvl.w; bar.style.background=lvl.c; lbl.textContent=lvl.t; lbl.style.color=lvl.c;
+    }
+
+    function toggleEye(id, btn) {
+      const input = document.getElementById(id);
+      const icon  = btn.querySelector('i');
+      if (input.type==='password') { input.type='text'; icon.className='fas fa-eye'; }
+      else { input.type='password'; icon.className='fas fa-eye-slash'; }
+    }
+
+    async function createAdmin() {
+      const nom=document.getElementById('nom').value.trim();
+      const prenom=document.getElementById('prenom').value.trim();
+      const login=document.getElementById('login').value.trim();
+      const pwd=document.getElementById('password').value;
+      const confirm=document.getElementById('confirm').value;
+      const btn=document.getElementById('btnSetup');
+      document.getElementById('errorBox').style.display='none';
+
+      if (!nom||!prenom) { showErr('Nom et prénom sont requis'); return; }
+      if (!login)         { showErr("L'identifiant est requis"); return; }
+      if (login.length<3) { showErr("L'identifiant doit faire au moins 3 caractères"); return; }
+      if (!pwd)           { showErr('Le mot de passe est requis'); return; }
+      if (pwd.length<6)   { showErr('Le mot de passe doit faire au moins 6 caractères'); return; }
+      if (pwd!==confirm)  { showErr('Les mots de passe ne correspondent pas'); return; }
+
+      btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Création...';
+      btn.disabled=true;
+      try {
+        const res=await fetch('http://localhost:3000/api/auth/setup',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({nom,prenom,login,mot_de_passe:pwd})
+        });
+        const data=await res.json();
+        if (res.ok) {
+          document.getElementById('setupForm').style.display='none';
+          document.getElementById('successScreen').style.display='block';
+        } else {
+          showErr(data.message||'Erreur lors de la création');
+          btn.innerHTML='<i class="fas fa-rocket"></i> Créer le compte et démarrer';
+          btn.disabled=false;
+        }
+      } catch(e) {
+        showErr('Impossible de contacter le serveur');
+        btn.innerHTML='<i class="fas fa-rocket"></i> Créer le compte et démarrer';
+        btn.disabled=false;
+      }
+    }
+
+    function showErr(msg) {
+      const b=document.getElementById('errorBox');
+      b.style.display='block';
+      b.innerHTML='<i class="fas fa-times-circle"></i> '+msg;
+    }
+  </script>
+</body>
+</html>

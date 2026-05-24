@@ -1,816 +1,460 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Gestion Stagiaires & Visiteurs</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-    <style>
-        .top-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-        .top-bar-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .ansi-logo {
-            height: 60px;
-            width: auto;
-            object-fit: contain;
-            flex-shrink: 0;
-            border-radius: 8px;
-        }
-        .quick-actions {
-            display: flex;
-            gap: 12px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .quick-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            color: #fff;
-            transition: transform 0.15s, box-shadow 0.15s;
-            position: relative;
-            overflow: hidden;
-        }
-        .quick-btn::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(255,255,255,0);
-            transition: background 0.15s;
-        }
-        .quick-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
-        .quick-btn:hover::after { background: rgba(255,255,255,0.08); }
-        .quick-btn:active { transform: translateY(0); }
-        .quick-btn i { font-size: 16px; }
-        .quick-btn-stagiaire  { background: linear-gradient(135deg,#3b82f6,#1d4ed8); box-shadow: 0 3px 12px rgba(59,130,246,0.35); }
-        .quick-btn-visiteur   { background: linear-gradient(135deg,#8b5cf6,#6d28d9); box-shadow: 0 3px 12px rgba(139,92,246,0.35); }
-        .quick-btn-employe    { background: linear-gradient(135deg,#10b981,#059669); box-shadow: 0 3px 12px rgba(16,185,129,0.35); }
-        .quick-btn-securite   { background: linear-gradient(135deg,#f59e0b,#b45309); box-shadow: 0 3px 12px rgba(245,158,11,0.35); }
-        .quick-btn-agent      { background: linear-gradient(135deg,#f59e0b,#d97706); box-shadow: 0 3px 12px rgba(245,158,11,0.35); }
-        .quick-btn-historique { background: linear-gradient(135deg,#8b5cf6,#6d28d9); box-shadow: 0 3px 12px rgba(139,92,246,0.35); }
-        .charts-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-        @media (max-width: 768px) { .charts-section { grid-template-columns: 1fr; } }
-        .chart-card {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px;
-            padding: 20px;
-        }
-        .chart-card h4 {
-            margin: 0 0 16px;
-            font-size: 13px;
-            font-weight: 600;
-            color: rgba(255,255,255,0.75);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .chart-card h4 i { color: #06b6d4; }
-        .chart-wrapper { position: relative; height: 200px; }
-        .table-container { margin-top: 20px; }
-        .filters-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            background: var(--bg-card);
-            padding: 15px 20px;
-            border-radius: 14px;
-            border: 1px solid var(--border);
-        }
-        .filters-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .filters-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .title-section {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .title-section h3 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-            color: #fff;
-        }
-        .table-info-badge {
-            background: rgba(6,182,212,0.15);
-            color: #06b6d4;
-            border: 1px solid rgba(6,182,212,0.25);
-            border-radius: 20px;
-            padding: 4px 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        .date-filter-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255,255,255,0.05);
-            padding: 5px 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-        .date-filter-group label {
-            font-size: 11px;
-            color: rgba(255,255,255,0.6);
-            font-weight: 500;
-        }
-        .date-filter-group input {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 6px;
-            padding: 6px 10px;
-            color: #fff;
-            font-size: 12px;
-            outline: none;
-        }
-        .date-filter-group input:focus { border-color: #06b6d4; }
-        .date-filter-group button {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            border-radius: 6px;
-            padding: 5px 10px;
-            cursor: pointer;
-            color: #fff;
-        }
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        .dropdown-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 10px;
-            padding: 9px 16px;
-            color: #fff;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-        .dropdown-btn:hover {
-            background: rgba(255,255,255,0.1);
-            border-color: #06b6d4;
-        }
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            margin-top: 8px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            min-width: 220px;
-            z-index: 100;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        .dropdown-content.show { display: block; }
-        .dropdown-item {
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-secondary);
-            font-size: 13px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .dropdown-item:last-child { border-bottom: none; }
-        .dropdown-item:hover {
-            background: rgba(6,182,212,0.1);
-            color: #06b6d4;
-        }
-        .dropdown-item .badge-count {
-            margin-left: auto;
-            background: rgba(6,182,212,0.15);
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #06b6d4;
-        }
-        .search-wrapper {
-            position: relative;
-        }
-        .search-icon-left {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #06b6d4;
-            font-size: 13px;
-            pointer-events: none;
-        }
-        .search-wrapper input {
-            background: rgba(255,255,255,0.06);
-            border: 1.5px solid rgba(6,182,212,0.25);
-            border-radius: 10px;
-            padding: 9px 90px 9px 38px;
-            color: #fff;
-            font-size: 13px;
-            outline: none;
-            width: 260px;
-            box-sizing: border-box;
-        }
-        .search-wrapper input:focus {
-            border-color: rgba(6,182,212,0.7);
-            background: rgba(255,255,255,0.09);
-        }
-        .search-wrapper input::placeholder { color: rgba(255,255,255,0.35); }
-        .search-right {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .search-count {
-            font-size: 11px;
-            color: #06b6d4;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .search-clear-btn {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: rgba(255,255,255,0.5);
-            font-size: 10px;
-        }
-        .search-clear-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
-        mark {
-            background: rgba(6,182,212,0.25);
-            color: #06b6d4;
-            border-radius: 3px;
-            padding: 1px 3px;
-        }
-        .badge-present {
-            background: rgba(16,185,129,0.2);
-            color: #10b981;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        .profil-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            background: rgba(6,182,212,0.12);
-            color: #06b6d4;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-        .profil-link:hover {
-            background: rgba(6,182,212,0.22);
-            transform: translateY(-1px);
-        }
-        .btn-sortie-quick {
-            background: rgba(239,68,68,0.15);
-            border: 1px solid rgba(239,68,68,0.3);
-            color: #f87171;
-            padding: 4px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        .btn-sortie-quick:hover {
-            background: rgba(239,68,68,0.3);
-            transform: translateY(-1px);
-        }
-        @media (max-width: 768px) {
-            .filters-row { flex-direction: column; align-items: stretch; }
-            .filters-left { justify-content: center; }
-            .filters-right { justify-content: center; }
-            .search-wrapper input { width: 100%; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tableau de bord — ANSI</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+<style>
+.welcome-text h2 { font-family:'Space Grotesk','Outfit',sans-serif; font-size:20px; font-weight:800; color:var(--text-1); margin-bottom:4px; }
+.welcome-text p  { font-size:13px; color:var(--text-3); }
+
+/* Stats grid — admin:5 cols, agent:3 cols */
+.stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; }
+.stats-grid.agent-stats { grid-template-columns:repeat(3,1fr) !important; }
+
+.stat-card { background:var(--surface); border-radius:24px; padding:20px 18px; border:1px solid var(--border); transition:transform .25s,box-shadow .25s; box-shadow:var(--shadow-sm); position:relative; overflow:hidden; }
+.stat-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; transform:scaleX(0); transform-origin:left; transition:transform .3s; }
+.stat-card:hover::after { transform:scaleX(1); }
+.stat-card-1::after { background:linear-gradient(90deg,#1671d9,#3b9eff); }
+.stat-card-2::after { background:linear-gradient(90deg,#0d9e8e,#2dd4bf); }
+.stat-card-3::after { background:linear-gradient(90deg,#6c47d6,#a78bfa); }
+.stat-card-4::after { background:linear-gradient(90deg,#d97706,#fbbf24); }
+.stat-card-5::after { background:linear-gradient(90deg,#dc2626,#f87171); }
+.stat-icon { width:48px; height:48px; border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:16px; }
+.stat-card-1 .stat-icon { background:rgba(22,113,217,0.12); color:#1671d9; }
+.stat-card-2 .stat-icon { background:rgba(13,158,142,0.12); color:#0d9e8e; }
+.stat-card-3 .stat-icon { background:rgba(108,71,214,0.12); color:#6c47d6; }
+.stat-card-4 .stat-icon { background:rgba(217,119,6,0.12); color:#d97706; }
+.stat-card-5 .stat-icon { background:rgba(220,38,38,0.12); color:#dc2626; }
+.stat-label  { font-size:11px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+.stat-number { font-family:'Space Grotesk',sans-serif; font-size:34px; font-weight:800; color:var(--text-1); line-height:1.1; letter-spacing:-1px; }
+.stat-sub    { font-size:11px; color:var(--text-3); margin-top:8px; font-weight:500; }
+
+/* Charts */
+.charts-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.chart-block { background:var(--surface); border-radius:var(--r-lg); padding:18px 20px; border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+.chart-block-title { font-size:13px; font-weight:600; color:var(--text-1); display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+.chart-block-title i { color:var(--blue); font-size:14px; }
+.chart-inner { height:200px; position:relative; }
+
+/* Table visiteurs */
+.table-section { background:var(--surface); border-radius:var(--r-lg); padding:20px 22px; border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+.table-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px; }
+.table-title { font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px; color:var(--text-1); }
+.table-info-pill { background:var(--blue-dim); color:#1152a3; border:1px solid rgba(22,113,217,0.18); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600; }
+.table-filters { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.date-group { display:flex; align-items:center; gap:6px; background:var(--surface-2); padding:5px 11px; border-radius:var(--r-sm); border:1px solid var(--border); }
+.date-group label { font-size:11px; color:var(--text-3); }
+.date-group input { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:3px 7px; font-size:11px; outline:none; color:var(--text-1); }
+.btn-date-reset { background:none; border:1px solid var(--border); border-radius:6px; padding:3px 8px; cursor:pointer; color:var(--text-2); font-size:10px; }
+.filter-dropdown { position:relative; }
+.filter-btn { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-sm); padding:7px 13px; font-size:12px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:7px; color:var(--text-1); font-family:inherit; }
+.filter-menu { display:none; position:absolute; top:calc(100% + 4px); left:0; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); box-shadow:var(--shadow-lg); min-width:180px; z-index:100; overflow:hidden; }
+.filter-menu.open { display:block; }
+.filter-item { display:flex; align-items:center; gap:8px; padding:9px 14px; font-size:12px; color:var(--text-2); cursor:pointer; border-bottom:1px solid var(--surface-2); transition:.15s; }
+.filter-item:hover { background:var(--blue-dim); color:var(--navy); }
+.filter-count { margin-left:auto; background:var(--blue-dim); color:#1152a3; border-radius:20px; padding:1px 8px; font-size:10px; font-weight:600; }
+.search-bar { display:flex; align-items:center; gap:8px; background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r-sm); padding:6px 11px; }
+.search-bar:focus-within { border-color:var(--blue); }
+.search-bar i { color:var(--text-3); font-size:13px; }
+.search-bar input { border:none; outline:none; font-size:13px; background:transparent; min-width:160px; color:var(--text-1); font-family:inherit; }
+.btn-clear-search { background:none; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:9px; color:var(--text-3); }
+.visitors-table { width:100%; border-collapse:collapse; font-size:12.5px; table-layout:fixed; }
+.visitors-table th:nth-child(1){width:8%} .visitors-table th:nth-child(2){width:7%} .visitors-table th:nth-child(3){width:9%}
+.visitors-table th:nth-child(4){width:8%} .visitors-table th:nth-child(5){width:13%} .visitors-table th:nth-child(6){width:12%}
+.visitors-table th:nth-child(7){width:8%} .visitors-table th:nth-child(8){width:6%} .visitors-table th:nth-child(9){width:10%} .visitors-table th:nth-child(10){width:19%}
+.visitors-table th,.visitors-table td { padding:0 10px; text-align:left; border-bottom:1px solid var(--surface-2); vertical-align:middle; overflow:hidden; text-overflow:ellipsis; }
+.visitors-table td:nth-child(9), .visitors-table td:nth-child(10) { white-space:nowrap; }
+.visitors-table thead tr { height:40px; }
+.visitors-table tbody tr { height:52px; }
+.visitors-table th { background:var(--surface-2); font-size:10.5px; font-weight:700; text-transform:uppercase; color:var(--text-3); letter-spacing:.8px; }
+.visitors-table tbody tr:hover td { background:rgba(22,113,217,0.03); }
+.badge-encours { display:inline-flex; align-items:center; gap:5px; background:rgba(13,158,142,0.1); color:#0a7a6e; border:1px solid rgba(13,158,142,0.2); padding:3px 9px; border-radius:20px; font-size:10px; font-weight:600; }
+.badge-encours::before { content:''; width:5px; height:5px; border-radius:50%; background:#0d9e8e; animation:pulseTeal 1.8s infinite; }
+.btn-sortie-sm { background:rgba(220,38,38,0.08); border:1px solid rgba(220,38,38,0.18); color:var(--red); padding:4px 10px; border-radius:20px; cursor:pointer; font-size:11px; font-weight:600; font-family:inherit; }
+mark { background:rgba(22,113,217,0.14); color:#1152a3; border-radius:3px; padding:1px 2px; }
+
+@media(max-width:1200px) { .stats-grid{grid-template-columns:repeat(3,1fr)} .charts-col{grid-template-columns:1fr} }
+@media(max-width:900px)  { .stats-grid,.stats-grid.agent-stats{grid-template-columns:repeat(2,1fr) !important} }
+@media(max-width:600px)  { .stats-grid.agent-stats{grid-template-columns:1fr !important} }
+@media(max-width:700px)  { .table-filters{flex-direction:column;align-items:stretch} }
+</style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <div class="top-bar">
-            <div class="top-bar-left">
-                <img src="logo.png" alt="Logo ANSI" class="ansi-logo" onerror="this.style.display='none'">
-                <h1>Gestion des Entrées/Sorties</h1>
-            </div>
-            <div class="user-info">
-                <span class="role-badge" id="roleBadge"></span>
-                <i class="fas fa-user-circle"></i>
-                <span id="userName"></span>
-                <a href="profil.html" class="profil-link">
-                    <i class="fas fa-user-edit"></i> Mon profil
-                </a>
-                <button type="button" class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
-                </button>
-            </div>
-        </div>
 
-        <div class="cards">
-            <div class="card">
-                <i class="fas fa-user-graduate card-icon"></i>
-                <h3>Stagiaires</h3>
-                <div class="number" id="nbStagiaires">0</div>
-            </div>
-            <div class="card">
-                <i class="fas fa-users card-icon"></i>
-                <h3>Visiteurs aujourd'hui</h3>
-                <div class="number" id="nbVisiteurs">0</div>
-            </div>
-            <div class="card">
-                <i class="fas fa-user-check card-icon"></i>
-                <h3>Visiteurs présents</h3>
-                <div class="number" id="nbPresent">0</div>
-            </div>
-            <div class="card">
-                <i class="fas fa-id-badge card-icon"></i>
-                <h3>Employés ANSI</h3>
-                <div class="number" id="nbEmployes">0</div>
-            </div>
-            <div class="card" id="cardSecurite" style="display:none;">
-                <i class="fas fa-shield-alt card-icon"></i>
-                <h3>Sécurité</h3>
-                <div class="number" id="nbSecurite">0</div>
-            </div>
-        </div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><img src="logo.png" alt="ANSI" onerror="this.style.display='none'"></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label" data-i18n="principal">Principal</div>
+    <a class="sidebar-link active"  href="dashboard.html"><i class="fas fa-th-large"></i><span data-i18n="tableau_bord">Tableau de bord</span></a>
+    <a class="sidebar-link" id="btnStagiaires" href="stagiaires.html"><i class="fas fa-user-graduate"></i><span data-i18n="stagiaires">Stagiaires</span></a>
+    <a class="sidebar-link"  href="visiteurs.html"><i class="fas fa-users"></i><span data-i18n="visiteurs">Visiteurs</span></a>
+    <a class="sidebar-link" id="btnEmployes" href="employes.html"><i class="fas fa-id-badge"></i><span data-i18n="employes">Employés</span></a>
+    <a class="sidebar-link" id="btnSecurite" href="securite.html"><i class="fas fa-shield-alt"></i><span data-i18n="agents_securite">Agents de sécurité</span></a>
+    <a class="sidebar-link"  href="accueil-agent.html"><i class="fas fa-clipboard-check"></i><span data-i18n="pointage_stagiaires">Pointage stagiaires</span></a>
+    <div class="nav-section-label" data-i18n="donnees">Données</div>
+    <a class="sidebar-link"  href="historique.html"><i class="fas fa-history"></i><span data-i18n="historique">Historique</span></a>
+    <a class="sidebar-link"  href="rapports.html"><i class="fas fa-chart-bar"></i><span data-i18n="rapports">Rapports</span></a>
+    <div class="nav-section-label" data-i18n="systeme">Système</div>
+    <a class="sidebar-link"  href="parametres.html"><i class="fas fa-cog"></i><span data-i18n="parametres">Paramètres</span></a>
+    <a class="sidebar-link"  href="profil.html"><i class="fas fa-user-edit"></i><span data-i18n="mon_profil">Mon profil</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user" onclick="window.location.href='profil.html'">
+      <div class="sidebar-avatar" id="sidebarInitials">--</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">—</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">—</div>
+      </div>
+      <i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.25);font-size:10px"></i>
+    </div>
+    <button class="sb-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span data-i18n="deconnexion">Déconnexion</span></button>
+  </div>
+</aside>
 
-        <div class="quick-actions">
-            <button class="quick-btn quick-btn-stagiaire" id="btnStagiaires" onclick="window.location.href='stagiaires.html'">
-                <i class="fas fa-user-graduate"></i> Gérer les stagiaires
-            </button>
-            <button class="quick-btn quick-btn-visiteur" id="btnVisiteurs" onclick="window.location.href='visiteurs.html'">
-                <i class="fas fa-users"></i> Enregistrer une visite
-            </button>
-            <button class="quick-btn quick-btn-employe" id="btnEmployes" onclick="window.location.href='employes.html'">
-                <i class="fas fa-id-badge"></i> Gérer les employés
-            </button>
-            <button class="quick-btn quick-btn-securite" id="btnSecurite" style="display:none;" onclick="window.location.href='securite.html'">
-                <i class="fas fa-shield-alt"></i> Gérer les agents de sécurité
-            </button>
-            <button class="quick-btn quick-btn-agent" id="btnAccueilAgent" onclick="window.location.href='accueil-agent.html'">
-                <i class="fas fa-clipboard-list"></i> Pointage stagiaires 
-            </button>
-            <button class="quick-btn quick-btn-historique" id="btnHistorique" onclick="window.location.href='historique.html'">
-                <i class="fas fa-history"></i> Historique
-            </button>
-        </div>
+<div class="main-wrapper" id="mainWrapper">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <span class="topbar-title" data-i18n="tableau_bord">Tableau de bord</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn" onclick="window.showNotificationsModal && window.showNotificationsModal()">
+        <i class="fas fa-bell"></i><span class="notif-badge hidden">0</span>
+      </button>
+      <button class="topbar-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
+    </div>
+  </header>
 
-        <div class="charts-section">
-            <div class="chart-card">
-                <h4><i class="fas fa-chart-bar"></i> Visiteurs — 7 derniers jours</h4>
-                <div class="chart-wrapper">
-                    <canvas id="chartVisiteurs"></canvas>
-                </div>
-            </div>
-            <div class="chart-card">
-                <h4><i class="fas fa-chart-pie"></i> Statut des visites du jour</h4>
-                <div class="chart-wrapper">
-                    <canvas id="chartStatut"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <div class="filters-row">
-                <div class="filters-left">
-                    <div class="title-section">
-                        <h3><i class="fas fa-history"></i> Derniers visiteurs</h3>
-                        <span class="table-info-badge" id="tableInfo">Chargement...</span>
-                    </div>
-                    <div class="date-filter-group">
-                        <label>Du</label>
-                        <input type="date" id="filterDateDebut" onchange="filterVisiteurs()">
-                        <label>Au</label>
-                        <input type="date" id="filterDateFin" onchange="filterVisiteurs()">
-                        <button onclick="resetDateFilter()" title="Réinitialiser"><i class="fas fa-times"></i></button>
-                    </div>
-                </div>
-                <div class="filters-right">
-                    <div class="dropdown">
-                        <button class="dropdown-btn" onclick="toggleDropdown()">
-                            <i class="fas fa-filter"></i>
-                            <span id="selectedFilterText">Tous</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                        <div class="dropdown-content" id="dropdownMenu">
-                            <div class="dropdown-item" onclick="selectFilter('tous', 'Tous')">
-                                <i class="fas fa-list"></i> Tous
-                                <span class="badge-count" id="badgeTous">0</span>
-                            </div>
-                            <div class="dropdown-item" onclick="selectFilter('encours', 'En cours')">
-                                <i class="fas fa-circle" style="color:#10b981; font-size:10px;"></i> En cours
-                                <span class="badge-count" id="badgeEnCours">0</span>
-                            </div>
-                            <div class="dropdown-item" onclick="selectFilter('sortis', 'Sortis')">
-                                <i class="fas fa-door-open"></i> Sortis
-                                <span class="badge-count" id="badgeSortis">0</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="search-wrapper">
-                        <i class="fas fa-search search-icon-left"></i>
-                        <input type="text" id="searchInput"
-                            placeholder="Nom, prénom, structure, personne visitée..."
-                            oninput="filterVisiteurs()" />
-                        <div class="search-right">
-                            <span class="search-count" id="searchCount"></span>
-                            <button class="search-clear-btn" onclick="clearSearch()" title="Effacer">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <table id="derniersVisiteurs">
-                <thead>
-                    <tr>
-                        <th>Nom</th>
-                        <th>Prénom</th>
-                        <th>Structure</th>
-                        <th>Personne visitée</th>
-                        <th>Direction</th>
-                        <th>Date</th>
-                        <th>Heure entrée</th>
-                        <th>Sortie</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="visiteursBody"></tbody>
-            </table>
-        </div>
+  <main class="main-content">
+    <!-- Bienvenue -->
+    <div class="welcome-text">
+      <h2><span data-i18n="bonjour">Bonjour,</span> <span id="welcomeName"></span> 👋</h2>
+      <p data-i18n="bienvenue">Bienvenue sur le système de gestion des entrées/sorties ANSI</p>
     </div>
 
-    <script src="script.js"></script>
-    <script>
-        let allVisiteurs  = [];
-        let barChart      = null;
-        let doughnutChart = null;
-        let currentUser   = null;
-        let activeFilter  = 'tous';
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <!-- Cartes communes (agent + admin) — EN PREMIER dans le DOM -->
+      <div class="stat-card stat-card-2" id="cardVisiteursToday">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-label" data-i18n="visiteurs_aujourdhui">Visiteurs aujourd'hui</div>
+        <div class="stat-number" id="nbVisiteurs">0</div>
+        <div class="stat-sub" data-i18n="nouveaux_visiteurs">Nouveaux visiteurs</div>
+      </div>
+      <div class="stat-card stat-card-3" id="cardVisiteursPresent">
+        <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+        <div class="stat-label" data-i18n="visiteurs_presents">Visiteurs présents</div>
+        <div class="stat-number" id="nbPresent">0</div>
+        <div class="stat-sub" data-i18n="en_ce_moment">En ce moment</div>
+      </div>
+      <div class="stat-card stat-card-4" id="cardEmployes">
+        <div class="stat-icon"><i class="fas fa-id-badge"></i></div>
+        <div class="stat-label" data-i18n="employes_ansi">Employés ANSI</div>
+        <div class="stat-number" id="nbEmployes">0</div>
+        <div class="stat-sub" data-i18n="employes_enregistres">Employés enregistrés</div>
+      </div>
+      <!-- Cartes admin uniquement — APRÈS dans le DOM -->
+      <div class="stat-card stat-card-1" id="cardStagiaires">
+        <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+        <div class="stat-label" data-i18n="total_stagiaires">Stagiaires</div>
+        <div class="stat-number" id="nbStagiaires">0</div>
+        <div class="stat-sub" data-i18n="total_enregistres">Total enregistrés</div>
+      </div>
+      <div class="stat-card stat-card-5" id="cardSecurite">
+        <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+        <div class="stat-label" data-i18n="agents_actifs">Agents de sécurité</div>
+        <div class="stat-number" id="nbSecurite">0</div>
+        <div class="stat-sub" data-i18n="agents_actifs">Agents actifs</div>
+      </div>
+    </div>
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const d = new Date(dateStr);
-            if (isNaN(d)) return dateStr;
-            return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
-        }
+    <!-- Charts -->
+    <div class="charts-col">
+      <div class="chart-block">
+        <div class="chart-block-title"><i class="fas fa-chart-line"></i> <span data-i18n="visiteurs_7j">Visiteurs — 7 derniers jours</span></div>
+        <div class="chart-inner"><canvas id="chartVisiteurs"></canvas></div>
+      </div>
+      <div class="chart-block">
+        <div class="chart-block-title"><i class="fas fa-chart-pie"></i> <span data-i18n="statut_visites">Statut des visites du jour</span></div>
+        <div class="chart-inner"><canvas id="chartStatut"></canvas></div>
+      </div>
+    </div>
 
-        function getUser() {
-            const userStr = localStorage.getItem('user');
-            if (!userStr) return null;
-            try { return JSON.parse(userStr); }
-            catch (e) { return null; }
-        }
+    <!-- Table derniers visiteurs -->
+    <div class="table-section">
+      <div class="table-section-header">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="table-title"><i class="fas fa-history"></i> <span data-i18n="derniers_visiteurs">Derniers visiteurs</span></div>
+          <span class="table-info-pill" id="tableInfo">—</span>
+        </div>
+        <div class="table-filters">
+          <div class="date-group">
+            <label data-i18n="du">Du</label>
+            <input type="date" id="filterDebut" onchange="filterTable()">
+            <label data-i18n="au">Au</label>
+            <input type="date" id="filterFin" onchange="filterTable()">
+            <button class="btn-date-reset" onclick="resetDates()"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="filter-dropdown">
+            <button class="filter-btn" onclick="toggleDropdown()">
+              <i class="fas fa-filter"></i><span id="filterLabel" data-i18n="tous">Tous</span>
+              <i class="fas fa-chevron-down" style="font-size:10px"></i>
+            </button>
+            <div class="filter-menu" id="filterMenu">
+              <div class="filter-item" onclick="setFilter('tous',t('tous'))"><i class="fas fa-list"></i><span data-i18n="tous">Tous</span><span class="filter-count" id="cntTous">0</span></div>
+              <div class="filter-item" onclick="setFilter('encours',t('en_cours'))"><i class="fas fa-circle" style="color:#0d9e8e;font-size:9px"></i><span data-i18n="en_cours">En cours</span><span class="filter-count" id="cntEnCours">0</span></div>
+              <div class="filter-item" onclick="setFilter('sortis',t('sortis'))"><i class="fas fa-door-open"></i><span data-i18n="sortis">Sortis</span><span class="filter-count" id="cntSortis">0</span></div>
+            </div>
+          </div>
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <select id="searchField" onchange="filterTable()" style="appearance:none;-webkit-appearance:none;-moz-appearance:none;background:transparent;border:none;border-right:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text-2);outline:none;font-family:inherit;cursor:pointer;padding:0 8px 0 0;margin-right:4px;">
+              <option value="nom" data-i18n="nom">Nom</option>
+              <option value="prenom" data-i18n="prenom">Prénom</option>
+              <option value="service_dorigine" data-i18n="structure">Structure</option>
+              <option value="direction" data-i18n="direction_visitee">Direction</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="Rechercher..." data-i18n-placeholder="rechercher">
+            <button class="btn-clear-search" onclick="clearSearch()"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="visitors-table">
+          <thead>
+            <tr>
+              <th data-i18n="nom">NOM</th>
+              <th data-i18n="prenom">PRÉNOM</th>
+              <th data-i18n="n_piece">N° PIÈCE</th>
+              <th data-i18n="structure">STRUCTURE</th>
+              <th data-i18n="personne_visitee">PERSONNE VISITÉE</th>
+              <th data-i18n="direction_visitee">DIRECTION</th>
+              <th data-i18n="date">DATE</th>
+              <th data-i18n="entree">ENTRÉE</th>
+              <th data-i18n="sortie">SORTIE</th>
+              <th data-i18n="actions">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="visiteursBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
 
-        function setUser(user) { localStorage.setItem('user', JSON.stringify(user)); }
+  <footer class="page-footer">
+    <span>© 2026 ANSI — <span data-i18n="footer_droits">Tous droits réservés.</span></span>
+    <span>Version 1.0.0 · <span data-i18n="footer_version">Système de gestion des entrées/sorties</span></span>
+  </footer>
+</div>
 
-        function getUserDisplayName(user) {
-            if (!user) return 'Utilisateur';
-            if (user.prenom && user.nom) return `${user.prenom} ${user.nom}`;
-            if (user.name) return user.name;
-            if (user.email) return user.email;
-            return 'Utilisateur';
-        }
+<script src="script.js"></script>
+<script src="notifications.js"></script>
+<script src="lang.js"></script>
+<script>
+// ── Variables ──
+let allVisiteurs = [], activeFilter = 'tous';
+let barChart = null, doughnutChart = null;
 
-        function highlight(text, q) {
-            if (!q || !text) return text || '-';
-            const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
-            return text.replace(re, '<mark>$1</mark>');
-        }
+// ── Utilitaires ──
+function fmt(d) { if(!d) return '-'; const dt=new Date(d); return isNaN(dt)?d:dt.toLocaleDateString('fr-FR'); }
+function hl(text, q) {
+  if (!q || !text) return text || '-';
+  return text.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>');
+}
+function getUserDisplayName(u) { return (u.prenom && u.nom) ? `${u.prenom} ${u.nom}` : (u.login || 'Utilisateur'); }
 
-        function applyRoleUI(user) {
-            const badge = document.getElementById('roleBadge');
-            const btnStagiaires = document.getElementById('btnStagiaires');
-            const btnVisiteurs = document.getElementById('btnVisiteurs');
-            const btnEmployes = document.getElementById('btnEmployes');
-            const btnSecurite = document.getElementById('btnSecurite');
-            const btnAccueilAgent = document.getElementById('btnAccueilAgent');
-            const btnHistorique = document.getElementById('btnHistorique');
-            const cardSecurite = document.getElementById('cardSecurite');
+// ── Dropdown filtre ──
+function toggleDropdown() { document.getElementById('filterMenu').classList.toggle('open'); }
+function setFilter(f, label) {
+  activeFilter = f;
+  document.getElementById('filterLabel').textContent = label;
+  document.getElementById('filterMenu').classList.remove('open');
+  filterTable();
+}
+document.addEventListener('click', e => {
+  const dd = document.querySelector('.filter-dropdown');
+  if (dd && !dd.contains(e.target)) document.getElementById('filterMenu').classList.remove('open');
+});
 
-            const userRole = user && user.role ? user.role : 'agent';
+// ── Dates ──
+function resetDates() { document.getElementById('filterDebut').value = ''; document.getElementById('filterFin').value = ''; filterTable(); }
+function clearSearch() { document.getElementById('searchInput').value = ''; filterTable(); }
 
-            if (userRole === 'admin') {
-                if (btnStagiaires) btnStagiaires.style.display = 'inline-flex';
-                if (btnVisiteurs) btnVisiteurs.style.display = 'inline-flex';
-                if (btnEmployes) btnEmployes.style.display = 'inline-flex';
-                if (btnSecurite) btnSecurite.style.display = 'inline-flex';
-                if (btnAccueilAgent) btnAccueilAgent.style.display = 'inline-flex';
-                if (btnHistorique) btnHistorique.style.display = 'inline-flex';
-                if (cardSecurite) cardSecurite.style.display = 'block';
-                badge.textContent = '👑 Administrateur';
-                badge.style.background = 'linear-gradient(135deg,#6c63ff,#a855f7)';
-            } else {
-                if (btnStagiaires) btnStagiaires.style.display = 'none';
-                if (btnVisiteurs) btnVisiteurs.style.display = 'inline-flex';
-                if (btnEmployes) btnEmployes.style.display = 'none';
-                if (btnSecurite) btnSecurite.style.display = 'none';
-                if (btnAccueilAgent) btnAccueilAgent.style.display = 'inline-flex';
-                if (btnHistorique) btnHistorique.style.display = 'inline-flex';
-                if (cardSecurite) cardSecurite.style.display = 'none';
-                badge.textContent = '🛡️ Agent de sécurité';
-                badge.style.background = 'linear-gradient(135deg,#06b6d4,#0891b2)';
-            }
-            badge.style.color = '#fff';
-        }
+// ── Filtrage + rendu ──
+function filterTable() {
+  let list = [...allVisiteurs];
+  const debut = document.getElementById('filterDebut').value;
+  const fin   = document.getElementById('filterFin').value;
+  if (debut) list = list.filter(v => v.date_visite >= debut);
+  if (fin)   list = list.filter(v => v.date_visite <= fin);
+  if (activeFilter === 'encours') list = list.filter(v => !v.heure_sortie);
+  if (activeFilter === 'sortis')  list = list.filter(v =>  v.heure_sortie);
+  const q     = document.getElementById('searchInput').value.trim().toLowerCase();
+  const field = document.getElementById('searchField').value;
+  if (q) {
+    list = list.filter(v => (v[field]||'').toLowerCase().includes(q));
+    list.sort((a, b) => {
+      const va = (a[field]||'').toLowerCase();
+      const vb = (b[field]||'').toLowerCase();
+      const aS = va.startsWith(q) ? 0 : 1;
+      const bS = vb.startsWith(q) ? 0 : 1;
+      if (aS !== bS) return aS - bS;
+      return va.localeCompare(vb);
+    });
+  }
+  // Badges
+  document.getElementById('cntTous').textContent    = allVisiteurs.length;
+  document.getElementById('cntEnCours').textContent = allVisiteurs.filter(v=>!v.heure_sortie).length;
+  document.getElementById('cntSortis').textContent  = allVisiteurs.filter(v=> v.heure_sortie).length;
+  renderTable(list, q, field);
+}
 
-        function resetDateFilter() {
-            document.getElementById('filterDateDebut').value = '';
-            document.getElementById('filterDateFin').value = '';
-            filterVisiteurs();
-        }
+function renderTable(list, q = '', field = 'nom') {
+  const tbody = document.getElementById('visiteursBody');
+  const info  = document.getElementById('tableInfo');
+  tbody.innerHTML = '';
+  const top10 = [...list].sort((a,b) =>
+    new Date(`${b.date_visite}T${b.heure_entree||'00:00:00'}`) -
+    new Date(`${a.date_visite}T${a.heure_entree||'00:00:00'}`)
+  ).slice(0, 10);
+  if (!top10.length) {
+    info.textContent = '0 visiteur';
+    const r = tbody.insertRow(); const c = r.insertCell(0);
+    c.colSpan = 10; c.textContent = t('aucun_visiteur');
+    c.style.cssText = 'text-align:center;padding:32px;color:#94a3b8';
+    return;
+  }
+  info.textContent = `${top10.length} dernier${top10.length>1?'s':''} visiteur${top10.length>1?'s':''}`;
+  top10.forEach(v => {
+    const row = tbody.insertRow();
+    const pv = v.employe_nom ? `${v.employe_prenom||''} ${v.employe_nom}`.trim() : '-';
+    row.insertCell(0).innerHTML = hl(v.nom||'-', q);
+    row.insertCell(1).innerHTML = hl(v.prenom||'-', q);
+    row.insertCell(2).innerHTML = hl(v.numero_carte||'-', q);
+    row.insertCell(3).innerHTML = hl(v.service_dorigine||'-', q);
+    row.insertCell(4).innerHTML = hl(pv, q);
+    row.insertCell(5).innerHTML = hl(v.direction||'-', q);
+    row.insertCell(6).textContent = fmt(v.date_visite);
+    row.insertCell(7).textContent = v.heure_entree ? v.heure_entree.substring(0,5) : '-';
+    row.insertCell(8).innerHTML   = v.heure_sortie ? v.heure_sortie.substring(0,5) : `<span class="badge-encours">${t('en_cours')}</span>`;
+    const ac = row.insertCell(9);
+    if (!v.heure_sortie) {
+      ac.innerHTML = `<button class="btn-sortie-sm" onclick="enregistrerSortie(${v.id},'${(v.nom||'').replace(/'/g,"\\'")}','${(v.prenom||'').replace(/'/g,"\\'")}')"><i class="fas fa-door-closed"></i> ${t('sortie')}</button>`;
+    } else {
+      ac.innerHTML = `<span style="color:#94a3b8;font-size:12px">${t('termine')}</span>`;
+    }
+  });
+}
 
-        function toggleDropdown() {
-            document.getElementById('dropdownMenu').classList.toggle('show');
-        }
+async function enregistrerSortie(id, nom, prenom) {
+  if (!confirm(`Confirmer la sortie de ${prenom} ${nom} ?`)) return;
+  try {
+    const res = await apiRequest(`http://localhost:3000/api/visiteurs/sortie/${id}`, { method:'PUT' });
+    if (res.ok) { await chargerDonnees(); }
+    else { const e = await res.json(); console.error(e.message||'Erreur'); }
+  } catch { console.error('Erreur réseau'); }
+}
 
-        function selectFilter(filter, text) {
-            activeFilter = filter;
-            document.getElementById('selectedFilterText').textContent = text;
-            document.getElementById('dropdownMenu').classList.remove('show');
-            filterVisiteurs();
-        }
+// ── Charts ──
+function buildChartLine(data) {
+  const canvas = document.getElementById('chartVisiteurs'); if (!canvas) return;
+  if (barChart) barChart.destroy();
+  const labels = [], values = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    labels.push(d.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric'}));
+    const ds = d.toISOString().split('T')[0];
+    values.push(data.filter(v => (v.date_visite||'').startsWith(ds)).length);
+  }
+  barChart = new Chart(canvas, {
+    type:'line',
+    data:{ labels, datasets:[{ label:'Visiteurs', data:values, borderColor:'#1671d9', backgroundColor:'rgba(22,113,217,0.07)', fill:true, tension:.4, pointBackgroundColor:'#1671d9', pointRadius:4, borderWidth:2 }] },
+    options:{ responsive:true, maintainAspectRatio:false, animation:{duration:0}, plugins:{legend:{display:false}}, scales:{ x:{grid:{color:'rgba(0,0,0,0.04)'}}, y:{beginAtZero:true, grid:{color:'rgba(0,0,0,0.04)'}} } }
+  });
+}
+function buildChartDoughnut(visiteurs) {
+  const canvas = document.getElementById('chartStatut'); if (!canvas) return;
+  if (doughnutChart) doughnutChart.destroy();
+  const presents = visiteurs.filter(v => !v.heure_sortie).length;
+  const sortis   = visiteurs.filter(v =>  v.heure_sortie).length;
+  doughnutChart = new Chart(canvas, {
+    type:'doughnut',
+    data:{ labels:[t('terminees'), t('en_cours')], datasets:[{ data:[sortis, presents], backgroundColor:['rgba(148,163,184,0.4)','rgba(22,113,217,0.8)'], borderColor:['#cbd5e1','#1671d9'], borderWidth:2 }] },
+    options:{ responsive:true, maintainAspectRatio:false, animation:{duration:0}, cutout:'65%', plugins:{legend:{position:'bottom', labels:{font:{size:11}, padding:10, boxWidth:12}}} }
+  });
+}
 
-        function updateFilterBadges(visiteurs) {
-            const total = visiteurs.length;
-            const encours = visiteurs.filter(v => !v.heure_sortie).length;
-            const sortis = visiteurs.filter(v => v.heure_sortie).length;
-            document.getElementById('badgeTous').textContent = total;
-            document.getElementById('badgeEnCours').textContent = encours;
-            document.getElementById('badgeSortis').textContent = sortis;
-        }
+// ── Chargement données ──
+async function chargerDonnees() {
+  try {
+    // Stagiaires
+    const rS = await apiRequest('http://localhost:3000/api/stagiaires');
+    document.getElementById('nbStagiaires').textContent = (await rS.json()).length;
+    // Employés
+    const rE = await apiRequest('http://localhost:3000/api/employes');
+    document.getElementById('nbEmployes').textContent = (await rE.json()).length;
+    // Visiteurs aujourd'hui
+    const rV = await apiRequest('http://localhost:3000/api/visiteurs/today');
+    const vToday = await rV.json();
+    document.getElementById('nbVisiteurs').textContent = vToday.length;
+    document.getElementById('nbPresent').textContent   = vToday.filter(v => !v.heure_sortie).length;
+    allVisiteurs = vToday;
+    filterTable();
+    buildChartDoughnut(vToday);
+    // Tous les visiteurs pour le graphe 7j
+    const rAll = await apiRequest('http://localhost:3000/api/visiteurs');
+    buildChartLine(await rAll.json());
+    // Agents (admin uniquement)
+    const user = getUser();
+    if (user && user.role === 'admin') {
+      try {
+        const rU = await apiRequest('http://localhost:3000/api/auth/users');
+        document.getElementById('nbSecurite').textContent = (await rU.json()).length;
+      } catch { document.getElementById('nbSecurite').textContent = '-'; }
+    }
+  } catch(e) {
+    console.error(e);
+  }
+}
 
-        document.addEventListener('click', function(event) {
-            const dropdown = document.querySelector('.dropdown');
-            if (dropdown && !dropdown.contains(event.target)) {
-                document.getElementById('dropdownMenu').classList.remove('show');
-            }
-        });
+// ── Initialisation ──
+async function init() {
+  if (!checkAuth()) return;                     // 1. Auth
+  initSidebarUser();                            // 2. Sidebar
+  applyTranslations();                          // 3. Langue
+  initNotifications(apiRequest);               // 4. Notifications
 
-        function getFilteredList() {
-            let list = [...allVisiteurs];
-            const dateDebut = document.getElementById('filterDateDebut').value;
-            const dateFin = document.getElementById('filterDateFin').value;
-            
-            if (dateDebut) list = list.filter(v => v.date_visite >= dateDebut);
-            if (dateFin) list = list.filter(v => v.date_visite <= dateFin);
-            if (activeFilter === 'encours') list = list.filter(v => !v.heure_sortie);
-            if (activeFilter === 'sortis') list = list.filter(v => v.heure_sortie);
-            
-            const input = document.getElementById('searchInput');
-            const q = input ? input.value.trim().toLowerCase() : '';
-            if (q) {
-                list = list.filter(v => {
-                    const pv = (v.employe_nom ? `${v.employe_prenom || ''} ${v.employe_nom}` : '').toLowerCase();
-                    const dir = (v.direction || '').toLowerCase();
-                    const service = (v.service_dorigine || '').toLowerCase();
-                    return (v.nom || '').toLowerCase().includes(q) ||
-                           (v.prenom || '').toLowerCase().includes(q) ||
-                           pv.includes(q) || 
-                           dir.includes(q) ||
-                           service.includes(q);
-                });
-            }
-            return { list, q };
-        }
+  // 5. Nom de bienvenue
+  try {
+    const res = await apiRequest('http://localhost:3000/api/auth/me');
+    const user = res.ok ? await res.json() : getUser();
+    const wn = document.getElementById('welcomeName');
+    if (wn && user) wn.textContent = getUserDisplayName(user);
+  } catch { const u=getUser(); if(u){ const wn=document.getElementById('welcomeName'); if(wn) wn.textContent=getUserDisplayName(u); } }
 
-        function filterVisiteurs() {
-            const { list, q } = getFilteredList();
-            const count = document.getElementById('searchCount');
-            updateFilterBadges(list);
-            const raw = document.getElementById('searchInput').value.trim();
-            if (count) count.textContent = raw ? `${list.length} résultat${list.length !== 1 ? 's' : ''}` : '';
-            renderTable(list, raw);
-        }
+  // 6. Affichage selon rôle
+  const user = getUser();
+  const isAdmin = user && user.role === 'admin';
+  const grid = document.getElementById('statsGrid');
+  if (!isAdmin) {
+    document.getElementById('cardStagiaires').style.display = 'none';
+    document.getElementById('cardSecurite').style.display   = 'none';
+    if (grid) grid.classList.add('agent-stats');
+  } else {
+    if (grid) grid.classList.remove('agent-stats');
+  }
 
-        function clearSearch() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('searchCount').textContent = '';
-            filterVisiteurs();
-        }
+  // 7. Données
+  await chargerDonnees();
+}
 
-        function renderTable(visiteurs, query = '') {
-            const tbody = document.getElementById('visiteursBody');
-            const info = document.getElementById('tableInfo');
-            tbody.innerHTML = '';
-
-            const sorted = [...visiteurs].sort((a, b) => {
-                const da = new Date(`${a.date_visite}T${a.heure_entree || '00:00:00'}`);
-                const db = new Date(`${b.date_visite}T${b.heure_entree || '00:00:00'}`);
-                return db - da;
-            });
-            const top10 = sorted.slice(0, 10);
-
-            if (!top10 || top10.length === 0) {
-                const row = tbody.insertRow();
-                const cell = row.insertCell(0);
-                cell.colSpan = 9;
-                cell.textContent = query ? `Aucun résultat pour "${query}"` : "Aucun visiteur";
-                cell.style.cssText = 'text-align:center;opacity:0.5;padding:20px';
-                info.textContent = '0 visiteur';
-                return;
-            }
-
-            info.textContent = `${top10.length} dernier${top10.length > 1 ? 's' : ''} visiteur${top10.length > 1 ? 's' : ''}`;
-
-            top10.forEach(v => {
-                const row = tbody.insertRow();
-                const personneVisitee = v.employe_nom ? `${v.employe_prenom || ''} ${v.employe_nom}`.trim() : '-';
-                const direction = v.direction || '-';
-                const serviceOrigine = v.service_dorigine || '-';
-                
-                row.insertCell(0).innerHTML = highlight(v.nom || '-', query);
-                row.insertCell(1).innerHTML = highlight(v.prenom || '-', query);
-                row.insertCell(2).innerHTML = highlight(serviceOrigine, query);
-                row.insertCell(3).innerHTML = highlight(personneVisitee, query);
-                row.insertCell(4).innerHTML = highlight(direction, query);
-                row.insertCell(5).textContent = formatDate(v.date_visite);
-                row.insertCell(6).textContent = v.heure_entree ? v.heure_entree.substring(0,5) : '-';
-                row.insertCell(7).innerHTML = v.heure_sortie ? v.heure_sortie.substring(0,5) : '<span class="badge-present">En cours</span>';
-
-                const actionCell = row.insertCell(8);
-                if (!v.heure_sortie) {
-                    actionCell.innerHTML = `<button class="btn-sortie-quick" onclick="enregistrerSortieDepuisDashboard(${v.id}, '${(v.nom||'').replace(/'/g,"\\'")}', '${(v.prenom||'').replace(/'/g,"\\'")}')"><i class="fas fa-door-closed"></i> Sortie</button>`;
-                } else {
-                    actionCell.innerHTML = '<span style="color:#6b7280;">Terminé</span>';
-                }
-            });
-        }
-
-        async function enregistrerSortieDepuisDashboard(visiteId, nom, prenom) {
-            if (!confirm(`Confirmer la sortie de ${prenom} ${nom} ?`)) return;
-            try {
-                const response = await apiRequest(`http://localhost:3000/api/visiteurs/sortie/${visiteId}`, { method: 'PUT' });
-                if (response.ok) {
-                    alert(`✅ ${prenom} ${nom} — Sortie enregistrée`);
-                    await loadDashboard();
-                } else {
-                    const error = await response.json();
-                    alert('❌ Erreur: ' + (error.message || 'Erreur lors de la sortie'));
-                }
-            } catch (error) {
-                alert('❌ Erreur de connexion');
-            }
-        }
-
-        function buildChartBarres(data) {
-            const canvas = document.getElementById('chartVisiteurs');
-            if (!canvas) return;
-            if (barChart) barChart.destroy();
-            const labels = [], values = [];
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                labels.push(d.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric' }));
-                const ds = d.toISOString().split('T')[0];
-                values.push(data.filter(v => (v.date_visite || '').startsWith(ds)).length);
-            }
-            barChart = new Chart(canvas, {
-                type: 'bar',
-                data: { labels, datasets: [{ label: 'Visiteurs', data: values, backgroundColor: 'rgba(6,182,212,0.65)', borderColor: '#06b6d4', borderWidth: 1, borderRadius: 6 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 11 }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true } } }
-            });
-        }
-
-        function buildChartStatut(visiteurs) {
-            const canvas = document.getElementById('chartStatut');
-            if (!canvas) return;
-            if (doughnutChart) doughnutChart.destroy();
-            const presents = visiteurs.filter(v => !v.heure_sortie).length;
-            const sortis = visiteurs.filter(v => v.heure_sortie).length;
-            doughnutChart = new Chart(canvas, {
-                type: 'doughnut',
-                data: { labels: ['En cours', 'Sortis'], datasets: [{ data: [presents, sortis], backgroundColor: ['rgba(16,185,129,0.75)', 'rgba(107,114,128,0.5)'], borderColor: ['#10b981', '#6b7280'], borderWidth: 2 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,0.6)', font: { size: 12 }, padding: 16 } } } }
-            });
-        }
-
-        async function apiRequest(url, options = {}) {
-            const token = localStorage.getItem('token');
-            const response = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...(options.headers || {}) } });
-            if (response.status === 401) { logout(); throw new Error('Non authentifié'); }
-            return response;
-        }
-
-        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
-        function checkAuth() { const token = localStorage.getItem('token'); if (!token) { window.location.href = 'index.html'; return null; } return token; }
-
-        async function refreshUserInfo() {
-            try {
-                const res = await apiRequest('http://localhost:3000/api/auth/me');
-                if (res.ok) {
-                    const freshUser = await res.json();
-                    const storedUser = getUser();
-                    if (storedUser) {
-                        storedUser.nom = freshUser.nom; storedUser.prenom = freshUser.prenom;
-                        storedUser.email = freshUser.email; storedUser.role = freshUser.role;
-                        setUser(storedUser);
-                    } else { setUser(freshUser); }
-                    return freshUser;
-                }
-            } catch (err) {}
-            return getUser();
-        }
-
-        async function loadDashboard() {
-            const token = checkAuth();
-            if (!token) return;
-            currentUser = await refreshUserInfo();
-            if (!currentUser) { window.location.href = 'index.html'; return; }
-            document.getElementById('userName').textContent = `${getUserDisplayName(currentUser)} (${currentUser.role || 'agent'})`;
-            applyRoleUI(currentUser);
-            try {
-                const resSt = await apiRequest('http://localhost:3000/api/stagiaires');
-                const stagiaires = await resSt.json();
-                document.getElementById('nbStagiaires').textContent = stagiaires.length;
-                try {
-                    const resEmp = await apiRequest('http://localhost:3000/api/employes');
-                    const employes = await resEmp.json();
-                    document.getElementById('nbEmployes').textContent = employes.length;
-                } catch { document.getElementById('nbEmployes').textContent = '0'; }
-                const resV = await apiRequest('http://localhost:3000/api/visiteurs/today');
-                const visiteurs = await resV.json();
-                document.getElementById('nbVisiteurs').textContent = visiteurs.length;
-                document.getElementById('nbPresent').textContent = visiteurs.filter(v => !v.heure_sortie).length;
-                if (currentUser.role === 'admin') {
-                    try {
-                        const resU = await apiRequest('http://localhost:3000/api/auth/users');
-                        const users = await resU.json();
-                        document.getElementById('nbSecurite').textContent = users.length;
-                    } catch { document.getElementById('nbSecurite').textContent = '-'; }
-                }
-                allVisiteurs = visiteurs;
-                filterVisiteurs();
-                buildChartStatut(visiteurs);
-                try {
-                    const resAll = await apiRequest('http://localhost:3000/api/visiteurs');
-                    const allVisiteursData = await resAll.json();
-                    buildChartBarres(allVisiteursData);
-                } catch { buildChartBarres(visiteurs); }
-            } catch (err) { console.error(err); }
-        }
-
-        window.enregistrerSortieDepuisDashboard = enregistrerSortieDepuisDashboard;
-        window.resetDateFilter = resetDateFilter;
-        window.toggleDropdown = toggleDropdown;
-        window.selectFilter = selectFilter;
-        loadDashboard();
-    </script>
+document.getElementById('searchInput').addEventListener('input', filterTable);
+init();
+</script>
 </body>
 </html>
