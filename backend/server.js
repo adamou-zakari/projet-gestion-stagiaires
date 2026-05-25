@@ -61,6 +61,18 @@ app.get('/api/test', (req, res) => {
     res.json({ success: true, message: 'API fonctionne ! 🚀' });
 });
 
+// ROUTE TEMPORAIRE
+app.get('/api/fix-db2', async (req, res) => {
+    try {
+        await db.query(`ALTER TABLE visiteurs ADD COLUMN deleted_by INT NULL`).catch(() => {});
+        await db.query(`ALTER TABLE visiteurs ADD COLUMN type_visite VARCHAR(20) DEFAULT 'employe'`).catch(() => {});
+        await db.query(`ALTER TABLE employes ADD COLUMN est_present BOOLEAN DEFAULT FALSE`).catch(() => {});
+        res.json({ success: true, message: 'Colonnes ajoutées !' });
+    } catch (e) {
+        res.json({ success: false, error: e.message });
+    }
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
