@@ -55,6 +55,9 @@ async function initDB() {
             email VARCHAR(150) UNIQUE NULL,
             telephone VARCHAR(20) NULL,
             direction_id INT NOT NULL,
+            heure_arrivee TIME NULL,
+            heure_depart TIME NULL,
+            est_present BOOLEAN DEFAULT FALSE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT fk_employe_direction FOREIGN KEY (direction_id) REFERENCES directions(id) ON DELETE RESTRICT ON UPDATE CASCADE
         )`);
@@ -66,16 +69,19 @@ async function initDB() {
             numero_carte VARCHAR(30) NULL,
             telephone VARCHAR(20) NULL,
             service_dorigine VARCHAR(150) NULL,
+            type_visite VARCHAR(20) DEFAULT 'employe',
             date_visite DATE DEFAULT (CURDATE()),
             heure_entree TIME NULL,
             heure_sortie TIME NULL,
             employe_id INT NULL,
             utilisateur_id INT NULL,
             deleted_at TIMESTAMP NULL,
+            deleted_by INT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (employe_id) REFERENCES employes(id) ON DELETE SET NULL,
-            FOREIGN KEY (utilisateur_id) REFERENCES utilisateurs(id) ON DELETE SET NULL
+            FOREIGN KEY (utilisateur_id) REFERENCES utilisateurs(id) ON DELETE SET NULL,
+            FOREIGN KEY (deleted_by) REFERENCES utilisateurs(id) ON DELETE SET NULL
         )`);
 
         await db.query(`CREATE TABLE IF NOT EXISTS logs (
