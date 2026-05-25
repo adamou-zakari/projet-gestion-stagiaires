@@ -183,9 +183,14 @@
   </div>
 
   <script>
+    // ── URL automatique localhost vs production ──
+    const BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000'
+      : 'https://projet-gestion-stagiaires-production.up.railway.app';
+
     async function checkSetup() {
       try {
-        const res  = await fetch('http://localhost:3000/api/auth/setup/check');
+        const res  = await fetch(`${BASE}/api/auth/setup/check`);
         const data = await res.json();
         if (data.configured) {
           document.getElementById('setupForm').style.display   = 'none';
@@ -236,7 +241,7 @@
       btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Création...';
       btn.disabled=true;
       try {
-        const res=await fetch('http://localhost:3000/api/auth/setup',{
+        const res=await fetch(`${BASE}/api/auth/setup`,{
           method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({nom,prenom,login,mot_de_passe:pwd})
         });

@@ -1,10 +1,15 @@
 // script.js - Fonctions partagées pour toute l'application
 
-// ── URL du backend (à remplacer par votre Railway) ──
-const API_BASE_URL = 'https://projet-gestion-stagiaires-production.up.railway.app';
+// ─── URL API automatique (localhost vs production) ────────────────────────────
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://projet-gestion-stagiaires-production.up.railway.app';
 
 // API request avec token
 async function apiRequest(url, options = {}) {
+  // Remplacer automatiquement localhost par l'URL de production
+  const finalUrl = url.replace('http://localhost:3000', API_URL);
+  
   const token = localStorage.getItem('token');
   const headers = {
     'Content-Type': 'application/json',
@@ -13,9 +18,7 @@ async function apiRequest(url, options = {}) {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  // Construire l'URL complète
-  const fullUrl = url.startsWith('http') ? url : API_BASE_URL + url;
-  const response = await fetch(fullUrl, {
+  const response = await fetch(finalUrl, {
     ...options,
     headers
   });
@@ -134,7 +137,6 @@ function showToast(message, type = 'success') {
   setTimeout(() => toast.remove(), 4000);
 }
 
-// Sauvegarder la position de défilement de la sidebar.
 function saveSidebarScroll() {
   const nav = document.querySelector('.sidebar-nav');
   if (nav) {
@@ -142,7 +144,6 @@ function saveSidebarScroll() {
   }
 }
 
-// Restaurer la position de défilement de la sidebar.
 function restoreSidebarScroll() {
   const savedScroll = localStorage.getItem('sidebarScrollTop');
   if (savedScroll === null) return;
@@ -156,11 +157,9 @@ function restoreSidebarScroll() {
   });
 }
 
-// Intercepter les clics sur les liens de la sidebar pour sauvegarder le scroll avant navigation
 document.addEventListener('DOMContentLoaded', function () {
   restoreSidebarScroll();
   initTheme();
-
   const nav = document.querySelector('.sidebar-nav');
   if (nav) {
     nav.addEventListener('click', function (e) {
@@ -173,6 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Exporter globalement
+window.API_URL = API_URL;
 window.apiRequest = apiRequest;
 window.checkAuth = checkAuth;
 window.getUser = getUser;
