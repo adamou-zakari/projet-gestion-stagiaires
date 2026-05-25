@@ -61,6 +61,17 @@ app.get('/api/test', (req, res) => {
     res.json({ success: true, message: 'API fonctionne ! 🚀' });
 });
 
+// ROUTE TEMPORAIRE
+app.get('/api/fix-db3', async (req, res) => {
+    try {
+        await db.query(`ALTER TABLE employes ADD COLUMN heure_arrivee TIME NULL`).catch(() => {});
+        await db.query(`ALTER TABLE employes ADD COLUMN heure_depart TIME NULL`).catch(() => {});
+        res.json({ success: true, message: 'Colonnes employes ajoutées !' });
+    } catch (e) {
+        res.json({ success: false, error: e.message });
+    }
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
