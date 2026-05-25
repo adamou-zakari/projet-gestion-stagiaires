@@ -61,19 +61,6 @@ app.get('/api/test', (req, res) => {
     res.json({ success: true, message: 'API fonctionne ! 🚀' });
 });
 
-// ROUTE TEMPORAIRE — à supprimer après usage
-app.get('/api/reset-db', async (req, res) => {
-    try {
-        await db.query('SET FOREIGN_KEY_CHECKS=0');
-        await db.query('DELETE FROM utilisateurs');
-        await db.query('DELETE FROM directions');
-        await db.query('SET FOREIGN_KEY_CHECKS=1');
-        res.json({ success: true, message: 'Base vidée !' });
-    } catch (e) {
-        res.json({ success: false, error: e.message });
-    }
-});
-
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
