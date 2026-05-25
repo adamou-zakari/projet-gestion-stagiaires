@@ -64,8 +64,8 @@ app.get('/api/test', (req, res) => {
 // ROUTE TEMPORAIRE — à supprimer après usage
 app.get('/api/fix-db', async (req, res) => {
     try {
-        await db.query(`ALTER TABLE visiteurs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
-        await db.query(`ALTER TABLE pointages_stagiaires ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`);
+        await db.query(`ALTER TABLE visiteurs ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`).catch(() => {});
+        await db.query(`ALTER TABLE pointages_stagiaires ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`).catch(() => {});
         res.json({ success: true, message: 'Tables corrigées !' });
     } catch (e) {
         res.json({ success: false, error: e.message });
