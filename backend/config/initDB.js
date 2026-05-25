@@ -43,6 +43,7 @@ async function initDB() {
             heure DATETIME NOT NULL,
             date DATE NOT NULL,
             utilisateur_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (stagiaire_id) REFERENCES stagiaires(id) ON DELETE CASCADE,
             FOREIGN KEY (utilisateur_id) REFERENCES utilisateurs(id) ON DELETE SET NULL
         )`);
@@ -72,6 +73,7 @@ async function initDB() {
             utilisateur_id INT NULL,
             deleted_at TIMESTAMP NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (employe_id) REFERENCES employes(id) ON DELETE SET NULL,
             FOREIGN KEY (utilisateur_id) REFERENCES utilisateurs(id) ON DELETE SET NULL
         )`);
