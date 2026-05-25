@@ -61,6 +61,17 @@ app.get('/api/test', (req, res) => {
     res.json({ success: true, message: 'API fonctionne ! 🚀' });
 });
 
+// ROUTE TEMPORAIRE — à supprimer après usage
+app.get('/api/fix-db', async (req, res) => {
+    try {
+        await db.query(`ALTER TABLE visiteurs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
+        await db.query(`ALTER TABLE pointages_stagiaires ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`);
+        res.json({ success: true, message: 'Tables corrigées !' });
+    } catch (e) {
+        res.json({ success: false, error: e.message });
+    }
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
