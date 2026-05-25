@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const Utilisateur = require('../models/Utilisateur');
 const db = require('../config/db');
 
-// Fonction utilitaire pour logger
 async function logAction(action, userId, details, ip) {
     try {
         await db.query(
@@ -15,7 +14,6 @@ async function logAction(action, userId, details, ip) {
     }
 }
 
-// ─── Inscription (création d'un agent) ───────────────────────────────────────
 const register = async (req, res) => {
     try {
         const { nom, prenom, login, mot_de_passe, role } = req.body;
@@ -52,7 +50,6 @@ const register = async (req, res) => {
     }
 };
 
-// ─── Connexion (avec login ou email) ─────────────────────────────────────────
 const login = async (req, res) => {
     try {
         const { identifiant, mot_de_passe } = req.body;
@@ -112,7 +109,6 @@ const login = async (req, res) => {
     }
 };
 
-// ─── GET /api/auth/me ─────────────────────────────────────────────────────────
 const me = async (req, res) => {
     try {
         const user = await Utilisateur.findById(req.user.id);
@@ -124,23 +120,16 @@ const me = async (req, res) => {
     }
 };
 
-// ─── PUT /api/auth/me ─────────────────────────────────────────────────────────
 const updateMe = async (req, res) => {
     try {
-        const { nom, prenom, mot_de_passe } = req.body;
+        const { nom, prenom, email } = req.body;
 
         if (!nom || !prenom) {
             return res.status(400).json({ message: 'Nom et prénom sont obligatoires' });
         }
 
-        let query = 'UPDATE utilisateurs SET nom = ?, prenom = ?';
-        let params = [nom, prenom];
-
-        if (mot_de_passe && mot_de_passe.trim() !== '') {
-            const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
-            query += ', mot_de_passe = ?';
-            params.push(hashedPassword);
-        }
+        let query = 'UPDATE utilisateurs SET nom = ?, prenom = ?, email = ?';
+        let params = [nom, prenom, email || null];
 
         query += ' WHERE id = ?';
         params.push(req.user.id);
@@ -161,7 +150,6 @@ const updateMe = async (req, res) => {
     }
 };
 
-// ─── PUT /api/auth/me/password ────────────────────────────────────────────────
 const updateMyPassword = async (req, res) => {
     try {
         const { mot_de_passe_actuel, nouveau_mot_de_passe } = req.body;
@@ -195,8 +183,6 @@ const updateMyPassword = async (req, res) => {
     }
 };
 
-// ─── GET /api/auth/users ─────────────────────────────────────────────────────
-// ✅ FIX : requête directe pour garantir que login est toujours retourné
 const getAllUsers = async (req, res) => {
     try {
         const [utilisateurs] = await db.query(
@@ -211,7 +197,6 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-// ─── GET /api/auth/users/:id ──────────────────────────────────────────────────
 const getUserById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -227,7 +212,6 @@ const getUserById = async (req, res) => {
     }
 };
 
-// ─── DELETE /api/auth/users/:id ──────────────────────────────────────────────
 const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
@@ -253,7 +237,6 @@ const deleteUser = async (req, res) => {
     }
 };
 
-// ─── PUT /api/auth/users/:id ──────────────────────────────────────────────────
 const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
@@ -305,8 +288,6 @@ const updateUser = async (req, res) => {
     }
 };
 
-// ─── GET /api/auth/setup/check ────────────────────────────────────────────────
-// Vérifie si un admin existe déjà (pour le Setup Wizard)
 const setupCheck = async (req, res) => {
     try {
         const [rows] = await db.query(
@@ -320,11 +301,8 @@ const setupCheck = async (req, res) => {
     }
 };
 
-// ─── POST /api/auth/setup ─────────────────────────────────────────────────────
-// Crée le premier compte admin (bloqué si un admin existe déjà)
 const setupCreate = async (req, res) => {
     try {
-        // Vérifier qu'aucun admin n'existe
         const [rows] = await db.query(
             "SELECT COUNT(*) as count FROM utilisateurs WHERE role = 'admin'"
         );
@@ -343,7 +321,6 @@ const setupCreate = async (req, res) => {
             return res.status(400).json({ message: 'Le mot de passe doit contenir au moins 6 caractères' });
         }
 
-        // Vérifier login unique
         const [existing] = await db.query(
             'SELECT id FROM utilisateurs WHERE login = ?', [login]
         );
@@ -368,15 +345,11 @@ const setupCreate = async (req, res) => {
     }
 };
 
-// ─── DELETE /api/auth/reset-system ───────────────────────────────────────────
-// Supprime tous les comptes — réservé admin — retour au setup
 const resetSystem = async (req, res) => {
     try {
-        // Vérifier que c'est bien un admin qui fait la demande
         if (req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Accès refusé' });
         }
-        // Supprimer tous les utilisateurs
         await db.query('DELETE FROM utilisateurs');
         res.json({ message: 'Système réinitialisé avec succès' });
     } catch (error) {
@@ -385,14 +358,11 @@ const resetSystem = async (req, res) => {
     }
 };
 
-// ─── DELETE /api/auth/clear-data ─────────────────────────────────────────────
-// Efface toutes les données (visiteurs, stagiaires, pointages, logs)
 const clearData = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Accès refusé' });
         }
-        // Supprimer dans l'ordre pour respecter les clés étrangères
         await db.query('DELETE FROM logs');
         await db.query('DELETE FROM pointages_stagiaires');
         await db.query('DELETE FROM visiteurs');
