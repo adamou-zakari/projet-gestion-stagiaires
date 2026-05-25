@@ -86,20 +86,6 @@ async function initDB() {
             FOREIGN KEY (utilisateur_id) REFERENCES utilisateurs(id) ON DELETE SET NULL
         )`);
 
-        const [rows] = await db.query('SELECT COUNT(*) as count FROM directions');
-        if (rows[0].count === 0) {
-            await db.query(`INSERT INTO directions (nom) VALUES
-                ('Direction Générale'),
-                ('Direction des Systèmes d\\'Information'),
-                ('Direction de la Cybersécurité'),
-                ('Direction des Ressources Humaines'),
-                ('Direction Technique'),
-                ('Direction Financière et Comptable'),
-                ('Direction du Développement'),
-                ('Direction de la Réglementation')`);
-            console.log('✅ Directions initiales insérées');
-        }
-
         console.log('✅ Base de données initialisée');
     } catch (error) {
         console.error('❌ Erreur initDB:', error.message);
