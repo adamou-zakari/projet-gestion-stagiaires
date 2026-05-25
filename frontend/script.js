@@ -1,5 +1,8 @@
 // script.js - Fonctions partagées pour toute l'application
 
+// ── URL du backend (à remplacer par votre Railway) ──
+const API_BASE_URL = 'https://projet-gestion-stagiaires-production.up.railway.app';
+
 // API request avec token
 async function apiRequest(url, options = {}) {
   const token = localStorage.getItem('token');
@@ -10,7 +13,9 @@ async function apiRequest(url, options = {}) {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  const response = await fetch(url, {
+  // Construire l'URL complète
+  const fullUrl = url.startsWith('http') ? url : API_BASE_URL + url;
+  const response = await fetch(fullUrl, {
     ...options,
     headers
   });
@@ -130,8 +135,6 @@ function showToast(message, type = 'success') {
 }
 
 // Sauvegarder la position de défilement de la sidebar.
-// IMPORTANT : c'est .sidebar-nav qui a overflow-y:auto dans le CSS,
-// pas .sidebar (qui a overflow:hidden). On cible donc sidebar-nav.
 function saveSidebarScroll() {
   const nav = document.querySelector('.sidebar-nav');
   if (nav) {
@@ -140,9 +143,6 @@ function saveSidebarScroll() {
 }
 
 // Restaurer la position de défilement de la sidebar.
-// Le double requestAnimationFrame est indispensable : si on applique
-// scrollTop directement dans DOMContentLoaded, le navigateur remet
-// la valeur à 0 lors de son premier rendu juste après.
 function restoreSidebarScroll() {
   const savedScroll = localStorage.getItem('sidebarScrollTop');
   if (savedScroll === null) return;

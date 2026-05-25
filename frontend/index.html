@@ -191,18 +191,20 @@
     </form>
   </div>
   <script>
-    // ── Vérifier si setup est nécessaire avant de montrer le login ──
+    // ── URL du backend (à remplacer par votre Railway) ──
+    const API_BASE_URL = 'https://projet-gestion-stagiaires-production.up.railway.app';
+
+    // Vérifier si un admin existe, sinon rediriger vers setup
     (async function checkSetupFirst() {
       try {
-        const res  = await fetch('http://localhost:3000/api/auth/setup/check');
+        const res  = await fetch(`${API_BASE_URL}/api/auth/setup/check`);
         const data = await res.json();
         if (!data.configured) {
-          // Aucun admin → rediriger vers setup
           window.location.href = 'setup.html';
           return;
         }
       } catch(e) {
-        // Si serveur inaccessible, on reste sur la page login
+        // En cas d'erreur réseau, on reste sur la page de login
       }
     })();
 
@@ -217,6 +219,7 @@
         icon.className = 'fas fa-eye-slash';
       }
     }
+
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const identifiant = document.getElementById('identifiant').value.trim();
@@ -227,7 +230,7 @@
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connexion...';
       btn.disabled = true;
       try {
-        const res = await fetch('http://localhost:3000/api/auth/login', {
+        const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ identifiant, mot_de_passe: password })
